@@ -4,12 +4,15 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import '../styles/question_management.css';
 
-
 const QuestionManagement = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
+
+  // Dialog refs
+  const myQuestionsModalRef = useRef(null);
+  const addQuestionModalRef = useRef(null);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -38,17 +41,15 @@ const QuestionManagement = () => {
     navigate('/login');
   };
 
-  const showModal = (modalId) => {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.showModal();
+  const showModal = (modalRef) => {
+    if (modalRef.current) {
+      modalRef.current.showModal();
     }
   };
 
-  const closeModal = (modalId) => {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.close();
+  const closeModal = (modalRef) => {
+    if (modalRef.current) {
+      modalRef.current.close();
     }
   };
 
@@ -74,29 +75,38 @@ const QuestionManagement = () => {
         <section className="container">
           <h1>Question Management</h1>
           <div className="button-group">
-            <button onClick={() => showModal('myQuestionsModal')}>Show My Questions</button>
-            <button onClick={() => showModal('addQuestionModal')}>Add New Question</button>
+            <button className="action-button" onClick={() => showModal(myQuestionsModalRef)}>
+              Show My Questions
+            </button>
+            <button className="action-button" onClick={() => showModal(addQuestionModalRef)}>
+              Add New Question
+            </button>
           </div>
         </section>
 
         {/* My Questions Modal */}
-        <dialog id="myQuestionsModal">
-          <div>
-            <button onClick={() => closeModal('myQuestionsModal')}>&times; Close</button>
+        <dialog id="myQuestionsModal" ref={myQuestionsModalRef}>
+          <div className="modal-content">
+            <span className="close" onClick={() => closeModal(myQuestionsModalRef)}>&times;</span>
             <h2>My Questions</h2>
-            <p>Here are some questions...</p>
+            <div className="question-list">
+              <div className="question-item">What is 2 + 2?</div>
+              <div className="question-item">What is the capital of France?</div>
+            </div>
           </div>
         </dialog>
 
         {/* Add Question Modal */}
-        <dialog id="addQuestionModal">
-          <div>
-            <button onClick={() => closeModal('addQuestionModal')}>&times; Close</button>
+        <dialog id="addQuestionModal" ref={addQuestionModalRef}>
+          <div className="modal-content">
+            <span className="close" onClick={() => closeModal(addQuestionModalRef)}>&times;</span>
             <h2>Add New Question</h2>
             <form>
-              <label>Question Text</label>
-              <input type="text" />
-              <button type="button" onClick={() => alert('Submitted!')}>Submit</button>
+              <label>Question Text:</label>
+              <input type="text" placeholder="Enter your question" />
+              <button type="button" onClick={() => alert('Question submitted!')}>
+                Submit
+              </button>
             </form>
           </div>
         </dialog>
