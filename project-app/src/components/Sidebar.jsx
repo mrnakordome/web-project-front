@@ -1,7 +1,8 @@
 // src/components/Sidebar.jsx
 import React, { forwardRef } from 'react';
+import { Link } from 'react-router-dom';
 
-const Sidebar = forwardRef(({ isOpen, onClose, onNavigate, role }, ref) => {
+const Sidebar = forwardRef(({ isOpen, onClose, role }, ref) => {
   const sidebarStyle = {
     width: isOpen ? '250px' : '0',
     transition: 'width 0.3s',
@@ -14,24 +15,18 @@ const Sidebar = forwardRef(({ isOpen, onClose, onNavigate, role }, ref) => {
       </a>
       {role === 'admin' ? (
         <>
-          <a
-            href="#!"
-            style={{ backgroundColor: '#cec69e' }}
-            onClick={() => onNavigate('/admin')}
-          >
+          <Link to="/admin" style={{ backgroundColor: '#cec69e' }}>
             Admin Main Page
-          </a>
+          </Link>
           {/* Future Admin Navigation Links */}
         </>
       ) : (
         <>
-          <a
-            href="#!"
-            style={{ backgroundColor: '#cec69e' }}
-            onClick={() => onNavigate('/user')}
-          >
+          <Link to="/user" style={{ backgroundColor: '#cec69e' }}>
             User Main Page
-          </a>
+          </Link>
+          <Link to="/user/question-management">Question Management</Link>
+          <Link to="/leaderboard">Leaderboard</Link>
         </>
       )}
     </aside>

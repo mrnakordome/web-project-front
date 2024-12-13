@@ -1,0 +1,235 @@
+:root {
+    --background-color: #ede8d0;
+    --text-color: #333;
+    --button-background: #e07a5f;
+    --button-text-color: #fff;
+    --toggle-button-background: #e07a5f;
+    --toggle-button-text-color: #fff;
+    --link-color: #e07a5f;
+    --modal-background: rgba(0, 0, 0, 0.5);
+    --modal-content-background: #cfccba;
+    --sidebar-width: 250px;
+}
+
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+    overflow-x: hidden;
+}
+
+/* Header styles */
+.header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: var(--background-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    z-index: 2;
+    box-sizing: border-box;
+}
+
+.header .left-buttons {
+    display: flex;
+    align-items: center;
+}
+
+.toggle-button, .logout-button, .menu-button {
+    background: var(--toggle-button-background);
+    color: var(--toggle-button-text-color);
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s;
+    margin-right: 10px;
+}
+
+.toggle-button {
+    margin-right: 0;
+}
+
+.toggle-button:hover, .logout-button:hover, .menu-button:hover {
+    background-color: #ec5a32;
+}
+
+/* Sidebar styles */
+.sidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: var(--modal-content-background);
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    z-index: 3;
+    box-sizing: border-box;
+}
+
+.sidebar a {
+    padding: 10px 20px;
+    text-decoration: none;
+    font-size: 1em;
+    color: var(--text-color);
+    display: block;
+    transition: 0.3s;
+}
+
+.sidebar a:hover {
+    background-color: #ede8d0;
+}
+
+.close-sidebar {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 36px;
+    cursor: pointer;
+}
+
+/* Main content styles */
+.main-content {
+    transition: margin-left 0.5s;
+    padding: 80px 20px 20px 20px;
+    box-sizing: border-box;
+}
+
+.leaderboard-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: var(--modal-content-background);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2em;
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1em;
+}
+
+.leaderboard-table th, .leaderboard-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.leaderboard-table th {
+    background-color: var(--button-background);
+    color: var(--button-text-color);
+}
+
+.leaderboard-table tr:hover {
+    background-color: #ede8d0;
+}
+
+.leaderboard-table .top-player {
+    font-weight: bold;
+}
+
+.trophy {
+    font-size: 1.2em;
+    margin-right: 5px;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .toggle-button, .logout-button, .menu-button {
+        padding: 8px;
+        font-size: 16px;
+    }
+
+    .header {
+        padding: 10px 15px;
+    }
+
+    .leaderboard-title {
+        font-size: 1.8em;
+    }
+
+    .leaderboard-table th, .leaderboard-table td {
+        padding: 10px 12px;
+    }
+
+    .trophy {
+        font-size: 1em;
+    }
+}
+
+@media (max-width: 480px) {
+    .toggle-button, .logout-button, .menu-button {
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .header {
+        padding: 8px 10px;
+    }
+
+    .leaderboard-title {
+        font-size: 1.5em;
+    }
+
+    .leaderboard-table th, .leaderboard-table td {
+        padding: 8px 10px;
+        font-size: 0.9em;
+    }
+
+    .trophy {
+        font-size: 0.9em;
+        margin-right: 3px;
+    }
+
+    .main-content {
+        padding: 70px 10px 20px 10px;
+    }
+}
+
+/* Dark mode styles */
+body.dark-mode {
+    --background-color: #121212;
+    --text-color: #ffffff;
+    --button-background: #e07a5f;
+    --button-text-color: #000000;
+    --toggle-button-background: #e07a5f;
+    --toggle-button-text-color: #000000;
+    --link-color: #e07a5f;
+    --modal-content-background: #1e1e1e;
+}
+
+body.dark-mode .sidebar {
+    background-color: #1e1e1e;
+}
+
+body.dark-mode .sidebar a:hover {
+    background-color: #121212;
+}
+
+body.dark-mode .leaderboard-container {
+    background-color: #1e1e1e;
+    color: var(--text-color);
+}
+
+body.dark-mode .leaderboard-table th {
+    background-color: #e07a5f;
+    color: #000000;
+}
+
+body.dark-mode .leaderboard-table tr:hover {
+    background-color: #121212;
+}

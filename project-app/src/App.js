@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminMainPage from './components/AdminMainPage';
 import UserMainPage from './components/UserMainPage';
 import LoginPage from './components/LoginPage';
+import Leaderboard from './components/Leaderboard';
 import ProtectedRoute from './routes/ProtectedRoute';
 
 const App = () => {
@@ -27,6 +28,16 @@ const App = () => {
         element={
           <ProtectedRoute requiredRole="user">
             <UserMainPage />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Protected Route for Leaderboard */}
+      <Route
+        path="/leaderboard"
+        element={
+          <ProtectedRoute requiredRole="user">
+            <Leaderboard />
           </ProtectedRoute>
         }
       />
