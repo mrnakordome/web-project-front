@@ -1,4 +1,3 @@
-// src/components/UserQuestionManagement.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
@@ -37,24 +36,8 @@ const UserQuestionManagement = () => {
     document.title = "User Question Management";
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target) &&
-        isSidebarOpen
-      ) {
-        setIsSidebarOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isSidebarOpen]);
-
   const handleToggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
+    setIsDarkMode((prev) => !prev);
   };
 
   const handleLogout = () => {
@@ -86,7 +69,6 @@ const UserQuestionManagement = () => {
   const closeModal = (modalRef) => {
     if (modalRef.current) {
       modalRef.current.close();
-      // Reset category selection visibility if closing answerQuestionModal
       if (modalRef === answerQuestionModalRef) {
         setShowCategorySelect(false);
       }
@@ -122,7 +104,7 @@ const UserQuestionManagement = () => {
       optionsContainer.innerHTML = '';
       options.forEach((option, index) => {
         const button = document.createElement('button');
-        button.innerText = 'Option ' + String.fromCharCode(65 + index) + ': ' + option;
+        button.innerText = `Option ${String.fromCharCode(65 + index)}: ${option}`;
         button.onclick = () => submitAnswer(String.fromCharCode(65 + index));
         optionsContainer.appendChild(button);
       });
@@ -162,9 +144,9 @@ const UserQuestionManagement = () => {
             </button>
           </div>
         </section>
-        
+
         {/* Answer Question Modal */}
-        <dialog id="answerQuestionModal" className="modal" ref={answerQuestionModalRef}>
+        <dialog id="answerQuestionModal" ref={answerQuestionModalRef}>
           <div className="modal-content">
             <span className="close" onClick={() => closeModal(answerQuestionModalRef)}>&times;</span>
             <h2>Choose How to Answer</h2>
@@ -185,7 +167,7 @@ const UserQuestionManagement = () => {
         </dialog>
 
         {/* Question History Modal */}
-        <dialog id="questionHistoryModal" className="modal" ref={questionHistoryModalRef}>
+        <dialog id="questionHistoryModal" ref={questionHistoryModalRef}>
           <div className="modal-content">
             <span className="close" onClick={() => closeModal(questionHistoryModalRef)}>&times;</span>
             <h2>My Question History</h2>
@@ -205,7 +187,7 @@ const UserQuestionManagement = () => {
         </dialog>
 
         {/* Question Modal */}
-        <dialog id="questionModal" className="modal" ref={questionModalRef}>
+        <dialog id="questionModal" ref={questionModalRef}>
           <div className="modal-content">
             <span className="close" onClick={() => closeModal(questionModalRef)}>&times;</span>
             <h2 id="questionText">Question goes here</h2>

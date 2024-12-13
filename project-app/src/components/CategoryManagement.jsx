@@ -1,10 +1,8 @@
-// src/components/CategoryManagement.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import '../styles/category_management.css';
-
 
 const CategoryManagement = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -12,6 +10,10 @@ const CategoryManagement = () => {
 
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
+
+  // Dialog refs
+  const categoriesModalRef = useRef(null);
+  const addCategoryModalRef = useRef(null);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -50,7 +52,7 @@ const CategoryManagement = () => {
   }, [isSidebarOpen]);
 
   const handleToggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
+    setIsDarkMode((prev) => !prev);
   };
 
   const handleLogout = () => {
@@ -73,28 +75,28 @@ const CategoryManagement = () => {
     navigate(path);
   };
 
-  // CHANGED PART:
-  const showModal = (modalId) => {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.showModal(); // Use dialog's native showModal() method
+  const showModal = (modalRef) => {
+    if (modalRef.current) {
+      modalRef.current.showModal(); // Use dialog's native showModal method
+    }
   };
 
-  const closeModal = (modalId) => {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.close(); // Use dialog's native close() method
+  const closeModal = (modalRef) => {
+    if (modalRef.current) {
+      modalRef.current.close(); // Use dialog's native close method
+    }
   };
 
   const addCategory = () => {
     const categoryName = document.getElementById('newCategoryName').value;
     if (categoryName) {
-      alert('Category "' + categoryName + '" added!');
+      alert(`Category "${categoryName}" added!`);
       document.getElementById('newCategoryName').value = '';
-      closeModal('addCategoryModal');
+      closeModal(addCategoryModalRef);
     } else {
       alert('Please enter a category name.');
     }
   };
-  // END CHANGED PART
 
   return (
     <>
@@ -115,18 +117,18 @@ const CategoryManagement = () => {
         <div className="container">
           <h1>Category Management</h1>
           <div className="button-group">
-            <button className="action-button" onClick={() => showModal('categoriesModal')}>
+            <button className="action-button" onClick={() => showModal(categoriesModalRef)}>
               Show Current Categories
             </button>
-            <button className="action-button" onClick={() => showModal('addCategoryModal')}>
+            <button className="action-button" onClick={() => showModal(addCategoryModalRef)}>
               Add New Category
             </button>
           </div>
         </div>
-        
-        <dialog id="categoriesModal" className="modal">
+
+        <dialog id="categoriesModal" ref={categoriesModalRef}>
           <div className="modal-content">
-            <span className="close" onClick={() => closeModal('categoriesModal')}>&times;</span>
+            <span className="close" onClick={() => closeModal(categoriesModalRef)}>&times;</span>
             <h2>Select a Category</h2>
             <select>
               <option value="">Select Category</option>
@@ -137,9 +139,9 @@ const CategoryManagement = () => {
           </div>
         </dialog>
 
-        <dialog id="addCategoryModal" className="modal">
+        <dialog id="addCategoryModal" ref={addCategoryModalRef}>
           <div className="modal-content">
-            <span className="close" onClick={() => closeModal('addCategoryModal')}>&times;</span>
+            <span className="close" onClick={() => closeModal(addCategoryModalRef)}>&times;</span>
             <h2>Add New Category</h2>
             <input type="text" id="newCategoryName" placeholder="Enter category name" />
             <button onClick={addCategory}>Add</button>
