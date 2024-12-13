@@ -2,14 +2,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminMainPage from './components/AdminMainPage';
+import UserMainPage from './components/UserMainPage';
 import LoginPage from './components/LoginPage';
-import ProtectedRoute from './routes/ProtectedRoute'; // Import ProtectedRoute
+import ProtectedRoute from './routes/ProtectedRoute';
 
 const App = () => {
-  // For demonstration, we'll use a simple auth state.
-  // In a real application, you'd manage authentication state more securely.
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
@@ -18,8 +15,18 @@ const App = () => {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute isAuthenticated={true}>
+          <ProtectedRoute requiredRole="admin">
             <AdminMainPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Route for User */}
+      <Route
+        path="/user"
+        element={
+          <ProtectedRoute requiredRole="user">
+            <UserMainPage />
           </ProtectedRoute>
         }
       />

@@ -1,0 +1,306 @@
+:root {
+    --background-color: #ede8d0;
+    --text-color: #333;
+    --button-background: #e07a5f;
+    --button-text-color: #fff;
+    --toggle-button-background: #e07a5f;
+    --toggle-button-text-color: #fff;
+    --link-color: #e07a5f;
+    --modal-background: rgba(0, 0, 0, 0.5);
+    --modal-content-background: #cfccba;
+    --sidebar-width: 250px;
+}
+
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+    overflow-x: hidden;
+}
+
+/* Header styles */
+.header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: var(--background-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    z-index: 2;
+    box-sizing: border-box;
+}
+
+.header .left-buttons {
+    display: flex;
+    align-items: center;
+}
+
+.toggle-button, .logout-button, .menu-button {
+    background: var(--toggle-button-background);
+    color: var(--toggle-button-text-color);
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2em;
+    transition: background-color 0.3s;
+    margin-right: 10px;
+}
+
+.toggle-button {
+    margin-right: 0;
+}
+
+.toggle-button:hover, .logout-button:hover, .menu-button:hover {
+    background-color: #ec5a32;
+}
+
+/* Sidebar styles */
+.sidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: var(--modal-content-background);
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    z-index: 3;
+    box-sizing: border-box;
+}
+
+.sidebar a {
+    padding: 10px 20px;
+    text-decoration: none;
+    font-size: 1em;
+    color: var(--text-color);
+    display: block;
+    transition: 0.3s;
+}
+
+.sidebar a:hover {
+    background-color: #ede8d0;
+}
+
+.close-sidebar {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 36px;
+    cursor: pointer;
+}
+
+
+/* Main content styles */
+.main-content {
+    transition: margin-left 0.5s;
+    padding: 80px 20px;
+    box-sizing: border-box;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center vertically */
+    align-items: center; /* Center horizontally */
+}
+
+/* Search bar styles */
+.search-container {
+    text-align: center;
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.search-container input[type="text"] {
+    width: 80%;
+    max-width: 500px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+.search-container button {
+    padding: 10px 20px;
+    background-color: var(--button-background);
+    color: var(--button-text-color);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+.search-container button:hover {
+    background-color: #ec5a32;
+}
+
+/* User profile styles */
+.user-profile {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.user-profile .user-icon {
+    font-size: 80px;
+    margin-bottom: 10px;
+}
+
+.user-profile .follow-stats {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.follow-stats div {
+    text-align: center;
+}
+
+.follow-stats div span {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Buttons */
+.button-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+}
+
+.action-button {
+    width: 80%;
+    max-width: 300px;
+    padding: 15px;
+    background-color: var(--button-background);
+    color: var(--button-text-color);
+    border: none;
+    border-radius: 4px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-decoration: none;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.action-button:hover {
+    background-color: #ec5a32;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .toggle-button, .logout-button, .menu-button {
+        padding: 8px;
+        font-size: 1em;
+    }
+
+    .header {
+        padding: 10px 15px;
+    }
+
+    .user-profile .user-icon {
+        font-size: 60px;
+    }
+
+    .follow-stats div span {
+        font-size: 20px;
+    }
+
+    .action-button {
+        width: 90%;
+        max-width: 250px;
+        padding: 12px;
+        font-size: 0.9em;
+    }
+
+    .search-container input[type="text"], .search-container button {
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 480px) {
+    .toggle-button, .logout-button, .menu-button {
+        padding: 6px;
+        font-size: 0.9em;
+    }
+
+    .header {
+        padding: 8px 10px;
+    }
+
+    .user-profile .user-icon {
+        font-size: 50px;
+    }
+
+    .follow-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .follow-stats div span {
+        font-size: 18px;
+    }
+
+    .action-button {
+        width: 100%;
+        max-width: none;
+        padding: 10px;
+        font-size: 0.85em;
+    }
+
+    .search-container input[type="text"], .search-container button {
+        width: 100%;
+        max-width: none;
+        margin: 5px 0;
+        font-size: 0.85em;
+    }
+
+    .search-container {
+        margin-bottom: 20px;
+    }
+}
+
+/* Dark mode styles */
+body.dark-mode {
+    --background-color: #121212;
+    --text-color: #ffffff;
+    --button-background: #e07a5f;
+    --button-text-color: #000000;
+    --toggle-button-background: #e07a5f;
+    --toggle-button-text-color: #000000;
+    --link-color: #e07a5f;
+    --modal-content-background: #1e1e1e;
+}
+
+body.dark-mode .sidebar {
+    background-color: #1e1e1e;
+}
+
+body.dark-mode .sidebar a:hover {
+    background-color: #121212;
+}
+
+body.dark-mode .search-container input[type="text"] {
+    background-color: #2e2e2e;
+    color: var(--text-color);
+    border: 1px solid #555;
+}
+
+body.dark-mode .search-container button {
+    background-color: #e07a5f;
+    color: #000;
+}
+
+body.dark-mode .search-container button:hover {
+    background-color: #ec5a32;
+}
