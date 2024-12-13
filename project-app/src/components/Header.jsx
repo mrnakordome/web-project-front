@@ -1,4 +1,4 @@
-// src/components/Header.jsx
+// src/components/Header.jsx (Ensure props are correctly passed)
 import React from 'react';
 import DarkModeToggle from './DarkModeToggle';
 

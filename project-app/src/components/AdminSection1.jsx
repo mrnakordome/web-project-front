@@ -1,17 +1,15 @@
-// src/components/AdminMainPage.jsx
+// src/components/AdminSection1.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Added import
 import Header from './Header';
 import Sidebar from './Sidebar';
-import UserProfile from './UserProfile';
 
-const AdminMainPage = () => {
+const AdminSection1 = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [followingCount, setFollowingCount] = useState(50);
-  const [followersCount, setFollowersCount] = useState(75);
 
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Initialized useNavigate
+  const sidebarRef = useRef(null); // Defined sidebarRef
 
   useEffect(() => {
     if (isDarkMode) {
@@ -30,32 +28,6 @@ const AdminMainPage = () => {
     }
   }, []);
 
-  const handleToggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userRole');
-    alert('Logging out...');
-    navigate('/login');
-  };
-
-  const handleMenuClick = () => {
-    setIsSidebarOpen(true);
-  };
-
-  const handleSidebarClose = () => {
-    setIsSidebarOpen(false);
-  };
-
-  const handleNavigate = (path) => {
-    setIsSidebarOpen(false);
-    navigate(path);
-  };
-
-  const sidebarRef = useRef(null);
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -73,6 +45,30 @@ const AdminMainPage = () => {
     };
   }, [isSidebarOpen]);
 
+  const handleToggleDarkMode = () => {
+    setIsDarkMode((prev) => !prev);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userRole');
+    alert('Logging out...');
+    navigate('/login'); // Navigates to login
+  };
+
+  const handleMenuClick = () => {
+    setIsSidebarOpen(true);
+  };
+
+  const handleSidebarClose = () => {
+    setIsSidebarOpen(false);
+  };
+
+  const handleNavigate = (path) => {
+    setIsSidebarOpen(false);
+    navigate(path);
+  };
+
   return (
     <>
       <Header
@@ -85,18 +81,15 @@ const AdminMainPage = () => {
         isOpen={isSidebarOpen}
         onClose={handleSidebarClose}
         onNavigate={handleNavigate}
-        ref={sidebarRef}
+        ref={sidebarRef} // Passed sidebarRef
         role="admin"
       />
-      <main id="mainContent" className="main-content">
-        <UserProfile followingCount={followingCount} followersCount={followersCount} />
-        {/* Add additional admin components or content here */}
-        <section className="admin-dashboard">
-          <h1>Welcome to the Admin Dashboard</h1>
-        </section>
+      <main className="main-content">
+        <h1>Admin Section 1</h1>
+        {/* Add content for Admin Section 1 */}
       </main>
     </>
   );
 };
 
-export default AdminMainPage;
+export default AdminSection1;

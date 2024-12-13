@@ -2,7 +2,7 @@
 import React, { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 
-const Sidebar = forwardRef(({ isOpen, onClose, role }, ref) => {
+const Sidebar = forwardRef(({ isOpen, onClose, onNavigate, role }, ref) => {
   const sidebarStyle = {
     width: isOpen ? '250px' : '0',
     transition: 'width 0.3s',
@@ -18,14 +18,14 @@ const Sidebar = forwardRef(({ isOpen, onClose, role }, ref) => {
           <Link to="/admin" style={{ backgroundColor: '#cec69e' }}>
             Admin Main Page
           </Link>
-          {/* Future Admin Navigation Links */}
+          {/* We are not adding admin sections as they are known but not implemented */}
         </>
       ) : (
         <>
           <Link to="/user" style={{ backgroundColor: '#cec69e' }}>
             User Main Page
           </Link>
-          <Link to="/user/question-management">Question Management</Link>
+          {/* Question Management link removed since it's not implemented yet */}
           <Link to="/leaderboard">Leaderboard</Link>
         </>
       )}

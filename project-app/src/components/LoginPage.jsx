@@ -13,6 +13,7 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
 
+  // Effect to handle dark mode class and localStorage
   useEffect(() => {
     if (isDarkMode) {
       document.body.classList.add('dark-mode');
@@ -23,11 +24,17 @@ const LoginPage = () => {
     localStorage.setItem('isDarkMode', isDarkMode);
   }, [isDarkMode]);
 
+  // Effect to retrieve dark mode preference from localStorage
   useEffect(() => {
     const savedMode = localStorage.getItem('isDarkMode');
     if (savedMode === 'true') {
       setIsDarkMode(true);
     }
+  }, []);
+
+  // **New Effect to set the document title**
+  useEffect(() => {
+    document.title = "Login";
   }, []);
 
   const handleToggleDarkMode = () => {
@@ -49,7 +56,7 @@ const LoginPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Logging in with:', { userType, username, password });
-
+    
     if (userType === 'admin') {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userRole', 'admin');
