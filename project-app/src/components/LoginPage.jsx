@@ -1,5 +1,4 @@
-// src/components/LoginPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DarkModeToggle from './DarkModeToggle';
 import LoginForm from './LoginForm';
@@ -10,6 +9,7 @@ const LoginPage = () => {
   const [userType, setUserType] = useState('user');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const registerModalRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -20,7 +20,6 @@ const LoginPage = () => {
     } else {
       document.body.classList.remove('dark-mode');
     }
-
     localStorage.setItem('isDarkMode', isDarkMode);
   }, [isDarkMode]);
 
@@ -32,13 +31,13 @@ const LoginPage = () => {
     }
   }, []);
 
-  // **New Effect to set the document title**
+  // Effect to set the document title
   useEffect(() => {
     document.title = "Login";
   }, []);
 
   const handleToggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
+    setIsDarkMode((prev) => !prev);
   };
 
   const handleUserTypeChange = (e) => {
@@ -56,7 +55,7 @@ const LoginPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Logging in with:', { userType, username, password });
-    
+
     if (userType === 'admin') {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userRole', 'admin');
@@ -72,6 +71,37 @@ const LoginPage = () => {
     }
   };
 
+  const showRegisterModal = () => {
+    if (registerModalRef.current) {
+      registerModalRef.current.showModal(); // Show the modal using the native method
+    }
+  };
+
+  const closeRegisterModal = () => {
+    if (registerModalRef.current) {
+      registerModalRef.current.close(); // Close the modal using the native method
+    }
+  };
+
+  const handleRegister = () => {
+    const registerUsername = document.getElementById('registerUsername').value.trim();
+    const registerPassword = document.getElementById('registerPassword').value.trim();
+    const registerPasswordAgain = document.getElementById('registerPasswordAgain').value.trim();
+
+    if (!registerUsername || !registerPassword || !registerPasswordAgain) {
+      alert('All fields are required.');
+      return;
+    }
+
+    if (registerPassword !== registerPasswordAgain) {
+      alert('Passwords do not match.');
+      return;
+    }
+
+    alert('Registration successful! Returning to login menu.');
+    closeRegisterModal();
+  };
+
   return (
     <>
       <DarkModeToggle isDarkMode={isDarkMode} onToggle={handleToggleDarkMode} />
@@ -85,7 +115,29 @@ const LoginPage = () => {
           onPasswordChange={handlePasswordChange}
           onSubmit={handleSubmit}
         />
+        <button className="register-button" onClick={showRegisterModal}>
+          Register Now
+        </button>
       </main>
+
+      {/* Register Modal */}
+      <dialog id="registerModal" ref={registerModalRef} className="modal">
+        <div className="modal-content">
+          <span className="close" onClick={closeRegisterModal}>&times;</span>
+          <h2>Register</h2>
+          <form>
+            <label htmlFor="registerUsername">Username:</label>
+            <input type="text" id="registerUsername" placeholder="Enter your username" />
+            <label htmlFor="registerPassword">Password:</label>
+            <input type="password" id="registerPassword" placeholder="Enter your password" />
+            <label htmlFor="registerPasswordAgain">Password Again:</label>
+            <input type="password" id="registerPasswordAgain" placeholder="Confirm your password" />
+            <button type="button" onClick={handleRegister}>
+              Sign Up
+            </button>
+          </form>
+        </div>
+      </dialog>
     </>
   );
 };
