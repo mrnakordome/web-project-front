@@ -18,14 +18,16 @@ const Sidebar = forwardRef(({ isOpen, onClose, onNavigate, role }, ref) => {
           <Link to="/admin" style={{ backgroundColor: '#cec69e' }}>
             Admin Main Page
           </Link>
-          {/* We are not adding admin sections as they are known but not implemented */}
+          <Link to="/admin/category-management">Category Management</Link>
+          <Link to="/admin/question-management">Question Management</Link>
+          {/* Admin links only, no user links */}
         </>
       ) : (
         <>
           <Link to="/user" style={{ backgroundColor: '#cec69e' }}>
             User Main Page
           </Link>
-          {/* Question Management link removed since it's not implemented yet */}
+          <Link to="/user/user-question-management">User Question Management</Link>
           <Link to="/leaderboard">Leaderboard</Link>
         </>
       )}

@@ -3,8 +3,11 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminMainPage from './components/AdminMainPage';
 import UserMainPage from './components/UserMainPage';
+import CategoryManagement from './components/CategoryManagement';
 import LoginPage from './components/LoginPage';
 import Leaderboard from './components/Leaderboard';
+import UserQuestionManagement from './components/UserQuestionManagement';
+import QuestionManagement from './components/QuestionManagement';
 import ProtectedRoute from './routes/ProtectedRoute';
 
 const App = () => {
@@ -38,6 +41,36 @@ const App = () => {
         element={
           <ProtectedRoute requiredRole="user">
             <Leaderboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Route for user question management */}
+      <Route
+        path="/user/user-question-management"
+        element={
+          <ProtectedRoute requiredRole="user">
+            <UserQuestionManagement />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Route for Question Management */}
+      <Route
+        path="/admin/question-management"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <QuestionManagement />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Route for Category Management */}
+      <Route
+        path="/admin/category-management"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <CategoryManagement />
           </ProtectedRoute>
         }
       />

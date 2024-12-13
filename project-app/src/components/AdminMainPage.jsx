@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import UserProfile from './UserProfile';
+import '../styles/adminmain.css';
+
 
 const AdminMainPage = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -93,6 +95,15 @@ const AdminMainPage = () => {
         {/* Add additional admin components or content here */}
         <section className="admin-dashboard">
           <h1>Welcome to the Admin Dashboard</h1>
+        </section>
+        {/* Buttons */}
+        <section className="button-group">
+          <button className="action-button" onClick={() => navigate('/admin/question-management')}>
+            Question Management
+          </button>
+          <button className="action-button" onClick={() => navigate('/admin/category-management')}>
+            Category Management
+          </button>
         </section>
       </main>
     </>

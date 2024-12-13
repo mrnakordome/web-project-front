@@ -122,7 +122,7 @@ const UserMainPage = () => {
 
         {/* Buttons */}
         <section className="button-group">
-          <button className="action-button" onClick={() => navigate('/user/question-management')}>
+          <button className="action-button" onClick={() => navigate('/user/user-question-management')}>
             Question Management
           </button>
           <button className="action-button" onClick={() => navigate('/leaderboard')}>
