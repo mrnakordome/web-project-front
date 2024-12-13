@@ -3,15 +3,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import '../styles/user_question_management.css';
-
 
 const UserQuestionManagement = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showCategorySelect, setShowCategorySelect] = useState(false);
 
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
+
+  // Dialog refs
+  const answerQuestionModalRef = useRef(null);
+  const questionHistoryModalRef = useRef(null);
+  const questionModalRef = useRef(null);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -43,9 +47,9 @@ const UserQuestionManagement = () => {
         setIsSidebarOpen(false);
       }
     };
-    window.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      window.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isSidebarOpen]);
 
@@ -73,29 +77,29 @@ const UserQuestionManagement = () => {
     navigate(path);
   };
 
-  // CHANGED PARTS:
-  const showModal = (modalId) => {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.showModal(); // Use native dialog method
+  const showModal = (modalRef) => {
+    if (modalRef.current) {
+      modalRef.current.showModal();
+    }
   };
 
-  const closeModal = (modalId) => {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.close(); // Use native dialog method
-      if (modalId === 'answerQuestionModal') {
-        document.getElementById('categorySelection').style.display = 'none';
+  const closeModal = (modalRef) => {
+    if (modalRef.current) {
+      modalRef.current.close();
+      // Reset category selection visibility if closing answerQuestionModal
+      if (modalRef === answerQuestionModalRef) {
+        setShowCategorySelect(false);
       }
     }
   };
 
   const showCategorySelection = () => {
-    document.getElementById('categorySelection').style.display = 'block';
+    setShowCategorySelect(true);
   };
 
   const startRandomQuestion = () => {
     alert('Starting a random question...');
-    closeModal('answerQuestionModal');
+    closeModal(answerQuestionModalRef);
     showQuestionModal('What is 2 + 2?', ['3', '4', '5', '6']);
   };
 
@@ -103,7 +107,7 @@ const UserQuestionManagement = () => {
     const category = document.getElementById('categorySelect').value;
     if (category) {
       alert('Starting a question in category: ' + category);
-      closeModal('answerQuestionModal');
+      closeModal(answerQuestionModalRef);
       showQuestionModal('What is the square root of 16?', ['2', '3', '4', '5']);
     } else {
       alert('Please select a category.');
@@ -111,26 +115,24 @@ const UserQuestionManagement = () => {
   };
 
   const showQuestionModal = (questionText, options) => {
-    document.getElementById('questionText').innerText = questionText;
-    const optionsContainer = document.querySelector('#questionModal .options');
-    optionsContainer.innerHTML = '';
-    options.forEach((option, index) => {
-      const button = document.createElement('button');
-      button.innerText = 'Option ' + String.fromCharCode(65 + index) + ': ' + option;
-      button.onclick = () => submitAnswer(String.fromCharCode(65 + index));
-      optionsContainer.appendChild(button);
-    });
-    showModal('questionModal');
+    const questionTextElement = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('questionOptions');
+    if (questionTextElement && optionsContainer) {
+      questionTextElement.innerText = questionText;
+      optionsContainer.innerHTML = '';
+      options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.innerText = 'Option ' + String.fromCharCode(65 + index) + ': ' + option;
+        button.onclick = () => submitAnswer(String.fromCharCode(65 + index));
+        optionsContainer.appendChild(button);
+      });
+      showModal(questionModalRef);
+    }
   };
 
   const submitAnswer = (selectedOption) => {
     alert('You selected: ' + selectedOption);
-    closeModal('questionModal');
-  };
-  // END CHANGED PARTS
-
-  const handleSearch = () => {
-    // Implement search if needed
+    closeModal(questionModalRef);
   };
 
   return (
@@ -152,38 +154,40 @@ const UserQuestionManagement = () => {
         <section className="container">
           <h1>Welcome, User</h1>
           <div className="button-group">
-            <button className="action-button" onClick={() => showModal('answerQuestionModal')}>
+            <button className="action-button" onClick={() => showModal(answerQuestionModalRef)}>
               Answer a New Question
             </button>
-            <button className="action-button" onClick={() => showModal('questionHistoryModal')}>
+            <button className="action-button" onClick={() => showModal(questionHistoryModalRef)}>
               My Question History
             </button>
           </div>
         </section>
         
         {/* Answer Question Modal */}
-        <dialog id="answerQuestionModal" className="modal">
+        <dialog id="answerQuestionModal" className="modal" ref={answerQuestionModalRef}>
           <div className="modal-content">
-            <span className="close" onClick={() => closeModal('answerQuestionModal')}>&times;</span>
+            <span className="close" onClick={() => closeModal(answerQuestionModalRef)}>&times;</span>
             <h2>Choose How to Answer</h2>
             <button onClick={startRandomQuestion}>Random Category</button>
             <button onClick={showCategorySelection}>Choose Category</button>
-            <div id="categorySelection" style={{display: 'none', marginTop: '20px'}}>
-              <select id="categorySelect">
-                <option value="">Select Category</option>
-                <option value="math">Math</option>
-                <option value="science">Science</option>
-                <option value="history">History</option>
-              </select>
-              <button style={{marginTop: '10px'}} onClick={startCategoryQuestion}>Start</button>
-            </div>
+            {showCategorySelect && (
+              <div id="categorySelection" style={{ marginTop: '20px' }}>
+                <select id="categorySelect">
+                  <option value="">Select Category</option>
+                  <option value="math">Math</option>
+                  <option value="science">Science</option>
+                  <option value="history">History</option>
+                </select>
+                <button style={{ marginTop: '10px' }} onClick={startCategoryQuestion}>Start</button>
+              </div>
+            )}
           </div>
         </dialog>
 
         {/* Question History Modal */}
-        <dialog id="questionHistoryModal" className="modal">
+        <dialog id="questionHistoryModal" className="modal" ref={questionHistoryModalRef}>
           <div className="modal-content">
-            <span className="close" onClick={() => closeModal('questionHistoryModal')}>&times;</span>
+            <span className="close" onClick={() => closeModal(questionHistoryModalRef)}>&times;</span>
             <h2>My Question History</h2>
             <div className="history-list">
               <div className="history-item">
@@ -201,11 +205,11 @@ const UserQuestionManagement = () => {
         </dialog>
 
         {/* Question Modal */}
-        <dialog id="questionModal" className="modal">
+        <dialog id="questionModal" className="modal" ref={questionModalRef}>
           <div className="modal-content">
-            <span className="close" onClick={() => closeModal('questionModal')}>&times;</span>
+            <span className="close" onClick={() => closeModal(questionModalRef)}>&times;</span>
             <h2 id="questionText">Question goes here</h2>
-            <div className="options"></div>
+            <div id="questionOptions" className="options"></div>
           </div>
         </dialog>
       </main>

@@ -76,6 +76,7 @@ const QuestionManagement = () => {
   };
 
   const showModal = (modalId) => {
+    alert('Showing modal');
     const modal = document.getElementById(modalId);
     if (modal) modal.showModal();
   };
