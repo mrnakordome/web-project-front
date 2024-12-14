@@ -1,4 +1,3 @@
-// src/components/LoginForm.jsx
 import React from 'react';
 import UserTypeSelector from './UserTypeSelector';
 import PasswordInput from './PasswordInput';
@@ -10,7 +9,8 @@ const LoginForm = ({
   onUsernameChange,
   password,
   onPasswordChange,
-  onSubmit
+  onSubmit,
+  onRegisterLinkClick, // Add a prop for the register link click handler
 }) => {
   return (
     <section className="login-box">
@@ -30,7 +30,18 @@ const LoginForm = ({
         <input type="submit" value="Login" />
       </form>
       <div className="register">
-        <p>Don't have an account? <a href="#">Register here</a></p>
+        <p>
+          Don't have an account?{' '}
+          <a 
+            href="#" 
+            onClick={(e) => {
+              e.preventDefault(); // Prevent the default link behavior
+              onRegisterLinkClick(); // Trigger the click handler
+            }}
+          >
+            Register here
+          </a>
+        </p>
       </div>
     </section>
   );

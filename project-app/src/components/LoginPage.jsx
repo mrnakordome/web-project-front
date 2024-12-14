@@ -83,22 +83,33 @@ const LoginPage = () => {
     }
   };
 
-  const handleRegister = () => {
-    const registerUsername = document.getElementById('registerUsername').value.trim();
-    const registerPassword = document.getElementById('registerPassword').value.trim();
-    const registerPasswordAgain = document.getElementById('registerPasswordAgain').value.trim();
+  const handleRegisterLinkClick = () => {
+    showRegisterModal();
+  };
 
-    if (!registerUsername || !registerPassword || !registerPasswordAgain) {
+  const handleRegister = () => {
+    const registerUsername = document.getElementById('registerUsername');
+    const registerPassword = document.getElementById('registerPassword');
+    const registerPasswordAgain = document.getElementById('registerPasswordAgain');
+
+    if (!registerUsername.value.trim() || !registerPassword.value.trim() || !registerPasswordAgain.value.trim()) {
       alert('All fields are required.');
       return;
     }
 
-    if (registerPassword !== registerPasswordAgain) {
+    if (registerPassword.value !== registerPasswordAgain.value) {
       alert('Passwords do not match.');
       return;
     }
 
     alert('Registration successful! Returning to login menu.');
+
+    // Clear the fields
+    registerUsername.value = '';
+    registerPassword.value = '';
+    registerPasswordAgain.value = '';
+
+    // Close the modal
     closeRegisterModal();
   };
 
@@ -114,10 +125,8 @@ const LoginPage = () => {
           password={password}
           onPasswordChange={handlePasswordChange}
           onSubmit={handleSubmit}
+          onRegisterLinkClick={handleRegisterLinkClick} // Pass the handler as a prop
         />
-        <button className="register-button" onClick={showRegisterModal}>
-          Register Now
-        </button>
       </main>
 
       {/* Register Modal */}
