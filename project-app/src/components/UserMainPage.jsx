@@ -1,17 +1,23 @@
-// src/components/UserMainPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import UserProfile from './UserProfile';
 
 const UserMainPage = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [followingCount, setFollowingCount] = useState(150);
-  const [followersCount, setFollowersCount] = useState(200);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Fetch dark mode preference
+    const savedMode = localStorage.getItem('isDarkMode');
+    if (savedMode === 'true') {
+      setIsDarkMode(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -19,16 +25,42 @@ const UserMainPage = () => {
     } else {
       document.body.classList.remove('dark-mode');
     }
-
     localStorage.setItem('isDarkMode', isDarkMode);
   }, [isDarkMode]);
 
   useEffect(() => {
-    const savedMode = localStorage.getItem('isDarkMode');
-    if (savedMode === 'true') {
-      setIsDarkMode(true);
-    }
-  }, []);
+    const fetchUserData = async () => {
+      const userId = localStorage.getItem('userId'); // Retrieve the userId from localStorage
+  
+      if (!userId) {
+        // Redirect to login if userId is not found
+        alert('User not found. Redirecting to login.');
+        navigate('/login');
+        return;
+      }
+  
+      try {
+        const response = await fetch(`http://localhost:5000/user/${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setFollowersCount(data.followers);
+          setFollowingCount(data.following);
+        } else {
+          const errorData = await response.json();
+          console.error('Error fetching user data:', errorData);
+          alert('Failed to fetch user data. Redirecting to login.');
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Something went wrong. Redirecting to login.');
+        navigate('/login');
+      }
+    };
+  
+    fetchUserData();
+  }, [navigate]);
+  
 
   const handleToggleDarkMode = () => {
     setIsDarkMode(prev => !prev);
@@ -37,6 +69,7 @@ const UserMainPage = () => {
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
     alert('Logging out...');
     navigate('/login');
   };
@@ -77,7 +110,6 @@ const UserMainPage = () => {
     const query = document.getElementById('searchInput').value;
     if (query) {
       alert(`Searching for: ${query}`);
-      // Implement search logic here
     } else {
       alert('Please enter a search term.');
     }

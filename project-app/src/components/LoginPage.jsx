@@ -6,7 +6,7 @@ import '../styles/loginmenu.css';
 
 const LoginPage = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [userType, setUserType] = useState('user');
+  const [userType, setUserType] = useState('user'); // Default to 'user'
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const registerModalRef = useRef(null);
@@ -52,24 +52,42 @@ const LoginPage = () => {
     setPassword(e.target.value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Logging in with:', { userType, username, password });
-
-    if (userType === 'admin') {
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userRole', 'admin');
-      alert('Logged in successfully! Redirecting to Admin Main Page...');
-      navigate('/admin');
-    } else if (userType === 'user') {
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userRole', 'user');
-      alert('Logged in successfully! Redirecting to User Main Page...');
-      navigate('/user');
-    } else {
-      alert('Invalid user type selected.');
+  
+    try {
+      const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, role: userType }),
+      });
+  
+      if (response.ok) {
+        const userData = await response.json();
+        console.log('Login successful:', userData);
+  
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userRole', userData.role);
+        localStorage.setItem('userId', userData.id); // Save the user ID in localStorage
+  
+        if (userData.role === 'admin') {
+          alert('Logged in successfully! Redirecting to Admin Main Page...');
+          navigate('/admin');
+        } else if (userData.role === 'user') {
+          alert('Logged in successfully! Redirecting to User Main Page...');
+          navigate('/user'); // Navigate to UserMainPage
+        }
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Invalid username or password');
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      alert('Something went wrong. Please try again.');
     }
   };
+  
+  
 
   const showRegisterModal = () => {
     if (registerModalRef.current) {
