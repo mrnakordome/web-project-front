@@ -8,6 +8,7 @@ const UserMainPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [username, setUsername] = useState(''); // Added to display user name
 
   const navigate = useNavigate();
 
@@ -28,23 +29,25 @@ const UserMainPage = () => {
     localStorage.setItem('isDarkMode', isDarkMode);
   }, [isDarkMode]);
 
+  // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       const userId = localStorage.getItem('userId'); // Retrieve the userId from localStorage
-  
+
       if (!userId) {
         // Redirect to login if userId is not found
         alert('User not found. Redirecting to login.');
         navigate('/login');
         return;
       }
-  
+
       try {
         const response = await fetch(`http://localhost:5000/user/${userId}`);
         if (response.ok) {
           const data = await response.json();
           setFollowersCount(data.followers);
           setFollowingCount(data.following);
+          setUsername(data.username); // Set the user name
         } else {
           const errorData = await response.json();
           console.error('Error fetching user data:', errorData);
@@ -57,13 +60,12 @@ const UserMainPage = () => {
         navigate('/login');
       }
     };
-  
+
     fetchUserData();
   }, [navigate]);
-  
 
   const handleToggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
+    setIsDarkMode((prev) => !prev);
   };
 
   const handleLogout = () => {
@@ -140,6 +142,7 @@ const UserMainPage = () => {
         {/* User Profile */}
         <section className="user-profile">
           <div className="user-icon">👤</div>
+          <h2>Welcome, {username}</h2>
           <div className="follow-stats">
             <div>
               <span>{followingCount}</span>
@@ -154,10 +157,16 @@ const UserMainPage = () => {
 
         {/* Buttons */}
         <section className="button-group">
-          <button className="action-button" onClick={() => navigate('/user/user-question-management')}>
+          <button
+            className="action-button"
+            onClick={() => navigate('/user/user-question-management')}
+          >
             Question Management
           </button>
-          <button className="action-button" onClick={() => navigate('/leaderboard')}>
+          <button
+            className="action-button"
+            onClick={() => navigate('/leaderboard')}
+          >
             Leaderboard
           </button>
         </section>

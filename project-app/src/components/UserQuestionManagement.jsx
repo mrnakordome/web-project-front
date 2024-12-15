@@ -7,6 +7,10 @@ const UserQuestionManagement = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showCategorySelect, setShowCategorySelect] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [questionHistory, setQuestionHistory] = useState([]);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [questionOptions, setQuestionOptions] = useState([]);
 
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
@@ -17,181 +21,174 @@ const UserQuestionManagement = () => {
   const questionModalRef = useRef(null);
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-    localStorage.setItem('isDarkMode', isDarkMode);
-  }, [isDarkMode]);
-
-  useEffect(() => {
-    const savedMode = localStorage.getItem('isDarkMode');
-    if (savedMode === 'true') {
-      setIsDarkMode(true);
-    }
+    fetchCategories();
   }, []);
 
-  useEffect(() => {
-    document.title = "User Question Management";
-  }, []);
-
-  const handleToggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userRole');
-    alert('Logging out...');
-    navigate('/login');
-  };
-
-  const handleMenuClick = () => {
-    setIsSidebarOpen(true);
-  };
-
-  const handleSidebarClose = () => {
-    setIsSidebarOpen(false);
-  };
-
-  const handleNavigate = (path) => {
-    setIsSidebarOpen(false);
-    navigate(path);
-  };
-
-  const showModal = (modalRef) => {
-    if (modalRef.current) {
-      modalRef.current.showModal();
+  // Fetch categories from the server
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/categories');
+      const data = await response.json();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
     }
   };
 
-  const closeModal = (modalRef) => {
-    if (modalRef.current) {
-      modalRef.current.close();
-      if (modalRef === answerQuestionModalRef) {
-        setShowCategorySelect(false);
+  // Fetch question history for the user
+  const fetchQuestionHistory = async () => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return alert('User not found. Please log in again.');
+
+    try {
+      const response = await fetch(`http://localhost:5000/user/${userId}/questions/history`);
+      if (response.ok) {
+        const data = await response.json();
+        setQuestionHistory(data);
+        showModal(questionHistoryModalRef);
+      } else {
+        alert('Failed to fetch question history.');
       }
+    } catch (error) {
+      console.error('Error fetching question history:', error);
     }
   };
 
-  const showCategorySelection = () => {
-    setShowCategorySelect(true);
-  };
-
-  const startRandomQuestion = () => {
-    alert('Starting a random question...');
-    closeModal(answerQuestionModalRef);
-    showQuestionModal('What is 2 + 2?', ['3', '4', '5', '6']);
-  };
-
-  const startCategoryQuestion = () => {
-    const category = document.getElementById('categorySelect').value;
-    if (category) {
-      alert('Starting a question in category: ' + category);
-      closeModal(answerQuestionModalRef);
-      showQuestionModal('What is the square root of 16?', ['2', '3', '4', '5']);
-    } else {
-      alert('Please select a category.');
+  // Fetch a random question
+  const fetchRandomQuestion = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/questions/random');
+      if (response.ok) {
+        const data = await response.json();
+        displayQuestion(data);
+      } else {
+        alert('No questions available.');
+      }
+    } catch (error) {
+      console.error('Error fetching random question:', error);
     }
   };
 
-  const showQuestionModal = (questionText, options) => {
-    const questionTextElement = document.getElementById('questionText');
-    const optionsContainer = document.getElementById('questionOptions');
-    if (questionTextElement && optionsContainer) {
-      questionTextElement.innerText = questionText;
-      optionsContainer.innerHTML = '';
-      options.forEach((option, index) => {
-        const button = document.createElement('button');
-        button.innerText = `Option ${String.fromCharCode(65 + index)}: ${option}`;
-        button.onclick = () => submitAnswer(String.fromCharCode(65 + index));
-        optionsContainer.appendChild(button);
-      });
-      showModal(questionModalRef);
+  // Fetch questions by category
+  const fetchCategoryQuestion = async () => {
+    const categoryId = document.getElementById('categorySelect').value;
+    if (!categoryId) return alert('Please select a category.');
+
+    try {
+      const response = await fetch(`http://localhost:5000/questions/category/${categoryId}`);
+      if (response.ok) {
+        const data = await response.json();
+        displayQuestion(data);
+      } else {
+        alert('No questions available for this category.');
+      }
+    } catch (error) {
+      console.error('Error fetching category question:', error);
     }
   };
 
+  // Display question modal
+  const displayQuestion = (question) => {
+    setCurrentQuestion(question);
+    setQuestionOptions(Object.entries(question.options));
+    showModal(questionModalRef);
+  };
+
+  // Submit an answer for a question
   const submitAnswer = (selectedOption) => {
-    alert('You selected: ' + selectedOption);
+    alert(`You selected: ${selectedOption}`);
     closeModal(questionModalRef);
   };
+
+  // Show modal
+  const showModal = (modalRef) => modalRef.current?.showModal();
+
+  // Close modal
+  const closeModal = (modalRef) => modalRef.current?.close();
 
   return (
     <>
       <Header
-        onMenuClick={handleMenuClick}
-        onLogout={handleLogout}
+        onMenuClick={() => setIsSidebarOpen(true)}
+        onLogout={() => {
+          localStorage.clear();
+          navigate('/login');
+        }}
         isDarkMode={isDarkMode}
-        onToggleDarkMode={handleToggleDarkMode}
+        onToggleDarkMode={() => setIsDarkMode((prev) => !prev)}
       />
       <Sidebar
         isOpen={isSidebarOpen}
-        onClose={handleSidebarClose}
-        onNavigate={handleNavigate}
+        onClose={() => setIsSidebarOpen(false)}
+        onNavigate={(path) => navigate(path)}
         ref={sidebarRef}
         role="user"
       />
-      <main id="mainContent" className="main-content">
-        <section className="container">
-          <h1>Welcome, User</h1>
-          <div className="button-group">
-            <button className="action-button" onClick={() => showModal(answerQuestionModalRef)}>
-              Answer a New Question
-            </button>
-            <button className="action-button" onClick={() => showModal(questionHistoryModalRef)}>
-              My Question History
-            </button>
-          </div>
-        </section>
+      <main className="main-content">
+        <h1>Welcome, User</h1>
+        <div className="button-group">
+          <button className="action-button" onClick={() => showModal(answerQuestionModalRef)}>
+            Answer a New Question
+          </button>
+          <button className="action-button" onClick={fetchQuestionHistory}>
+            My Question History
+          </button>
+        </div>
 
         {/* Answer Question Modal */}
-        <dialog id="answerQuestionModal" ref={answerQuestionModalRef}>
+        <dialog ref={answerQuestionModalRef}>
           <div className="modal-content">
             <span className="close" onClick={() => closeModal(answerQuestionModalRef)}>&times;</span>
             <h2>Choose How to Answer</h2>
-            <button onClick={startRandomQuestion}>Random Category</button>
-            <button onClick={showCategorySelection}>Choose Category</button>
+            <button onClick={fetchRandomQuestion}>Random Question</button>
+            <button onClick={() => setShowCategorySelect(true)}>Choose Category</button>
             {showCategorySelect && (
-              <div id="categorySelection" style={{ marginTop: '20px' }}>
+              <>
                 <select id="categorySelect">
                   <option value="">Select Category</option>
-                  <option value="math">Math</option>
-                  <option value="science">Science</option>
-                  <option value="history">History</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
                 </select>
-                <button style={{ marginTop: '10px' }} onClick={startCategoryQuestion}>Start</button>
-              </div>
+                <button onClick={fetchCategoryQuestion}>Start</button>
+              </>
             )}
           </div>
         </dialog>
 
         {/* Question History Modal */}
-        <dialog id="questionHistoryModal" ref={questionHistoryModalRef}>
+        <dialog ref={questionHistoryModalRef}>
           <div className="modal-content">
             <span className="close" onClick={() => closeModal(questionHistoryModalRef)}>&times;</span>
             <h2>My Question History</h2>
-            <div className="history-list">
-              <div className="history-item">
-                <strong>Question:</strong> What is the capital of Spain?<br />
-                <strong>Your Answer:</strong> Madrid<br />
-                <strong>Correct Answer:</strong> Madrid
-              </div>
-              <div className="history-item">
-                <strong>Question:</strong> Who painted the Mona Lisa?<br />
-                <strong>Your Answer:</strong> Vincent van Gogh<br />
-                <strong>Correct Answer:</strong> Leonardo da Vinci
-              </div>
-            </div>
+            {questionHistory.length > 0 ? (
+              questionHistory.map((q, index) => (
+                <div key={index} className="history-item">
+                  <p><strong>Question:</strong> {q.questionText}</p>
+                  <p><strong>Your Answer:</strong> {q.userAnswer}</p>
+                  <p><strong>Correct Answer:</strong> {q.correctAnswer}</p>
+                </div>
+              ))
+            ) : (
+              <p>No question history found.</p>
+            )}
           </div>
         </dialog>
 
         {/* Question Modal */}
-        <dialog id="questionModal" ref={questionModalRef}>
+        <dialog ref={questionModalRef}>
           <div className="modal-content">
             <span className="close" onClick={() => closeModal(questionModalRef)}>&times;</span>
-            <h2 id="questionText">Question goes here</h2>
-            <div id="questionOptions" className="options"></div>
+            <h2>{currentQuestion?.test}</h2>
+            <div>
+              {questionOptions.map(([option, text]) => (
+                <button key={option} onClick={() => submitAnswer(option)}>
+                  {option}: {text}
+                </button>
+              ))}
+            </div>
           </div>
         </dialog>
       </main>
