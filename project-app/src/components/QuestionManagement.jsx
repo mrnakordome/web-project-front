@@ -19,7 +19,6 @@ const QuestionManagement = () => {
 
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
-
   const myQuestionsModalRef = useRef(null);
   const addQuestionModalRef = useRef(null);
 
@@ -70,7 +69,9 @@ const QuestionManagement = () => {
     }));
   };
 
+  /* Add New Question */
   const handleAddNewQuestion = async () => {
+    const adminId = localStorage.getItem('userId'); // Current admin ID
     const { test, options, correctAnswer, categoryId, difficulty } = newQuestion;
 
     if (!test || !correctAnswer || !categoryId || !difficulty) {
@@ -82,11 +83,13 @@ const QuestionManagement = () => {
       const response = await fetch('http://localhost:5000/questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ test, options, correctAnswer, categoryId, difficulty }),
+        body: JSON.stringify({ adminId, test, options, correctAnswer, categoryId, difficulty }),
       });
 
       if (response.ok) {
+        const data = await response.json();
         alert('New question added successfully!');
+        setQuestions((prev) => [...prev, data.question]); // Update local questions
         setNewQuestion({
           test: '',
           options: { A: '', B: '', C: '', D: '' },
