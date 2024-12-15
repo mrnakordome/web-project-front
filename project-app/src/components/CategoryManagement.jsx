@@ -7,7 +7,7 @@ import '../styles/category_management.css';
 const CategoryManagement = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [categories, setCategories] = useState([]); // State to hold categories
+  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
 
@@ -16,28 +16,16 @@ const CategoryManagement = () => {
   const addCategoryModalRef = useRef(null);
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
+    document.body.classList.toggle('dark-mode', isDarkMode);
     localStorage.setItem('isDarkMode', isDarkMode);
   }, [isDarkMode]);
 
   useEffect(() => {
     const savedMode = localStorage.getItem('isDarkMode');
-    if (savedMode === 'true') {
-      setIsDarkMode(true);
-    }
+    if (savedMode === 'true') setIsDarkMode(true);
   }, []);
 
-  useEffect(() => {
-    document.title = "Category Management";
-  }, []);
-
-  const handleToggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
-  };
+  const handleToggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
@@ -46,25 +34,16 @@ const CategoryManagement = () => {
     navigate('/login');
   };
 
-  const showModal = (modalRef) => {
-    if (modalRef.current) {
-      modalRef.current.showModal(); // Use dialog's native showModal method
-    }
-  };
-
-  const closeModal = (modalRef) => {
-    if (modalRef.current) {
-      modalRef.current.close(); // Use dialog's native close method
-    }
-  };
+  const showModal = (modalRef) => modalRef.current?.showModal();
+  const closeModal = (modalRef) => modalRef.current?.close();
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:5000/categories'); // Fetch categories from backend
+      const response = await fetch('http://localhost:5000/categories');
       if (response.ok) {
         const data = await response.json();
         setCategories(data);
-        showModal(categoriesModalRef); // Show modal after fetching data
+        showModal(categoriesModalRef);
       } else {
         console.error('Failed to fetch categories.');
       }
@@ -73,14 +52,33 @@ const CategoryManagement = () => {
     }
   };
 
-  const addCategory = () => {
-    const categoryName = document.getElementById('newCategoryName').value;
-    if (categoryName) {
-      alert(`Category "${categoryName}" added!`);
-      document.getElementById('newCategoryName').value = '';
-      closeModal(addCategoryModalRef);
-    } else {
+  const addCategory = async () => {
+    const categoryName = document.getElementById('newCategoryName').value.trim();
+    if (!categoryName) {
       alert('Please enter a category name.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: categoryName }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`Category "${data.category.name}" added successfully!`);
+        setCategories((prevCategories) => [...prevCategories, data.category]); // Update state with the new category
+        document.getElementById('newCategoryName').value = ''; // Clear input field
+        closeModal(addCategoryModalRef); // Close modal
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Failed to add category.');
+      }
+    } catch (error) {
+      console.error('Error adding category:', error);
+      alert('Something went wrong. Please try again.');
     }
   };
 
