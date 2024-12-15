@@ -2,26 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import UserProfile from './UserProfile';
 import '../styles/adminmain.css';
 
 const AdminMainPage = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [followingCount, setFollowingCount] = useState(0); // Initialize to 0
-  const [followersCount, setFollowersCount] = useState(0); // Initialize to 0
-  const [adminName, setAdminName] = useState(''); // Store admin's name
+  const [followingCount, setFollowingCount] = useState(0); // Initialize following count
+  const [followersCount, setFollowersCount] = useState(0); // Initialize followers count
+  const [adminName, setAdminName] = useState(''); // Initialize admin's name
+
   const navigate = useNavigate();
+  const sidebarRef = useRef(null);
 
-  useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-    localStorage.setItem('isDarkMode', isDarkMode);
-  }, [isDarkMode]);
-
+  // Manage Dark Mode
   useEffect(() => {
     const savedMode = localStorage.getItem('isDarkMode');
     if (savedMode === 'true') {
@@ -30,52 +23,15 @@ const AdminMainPage = () => {
   }, []);
 
   const handleToggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
+    setIsDarkMode((prev) => !prev);
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('isDarkMode', !isDarkMode);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userId');
-    alert('Logging out...');
-    navigate('/login');
-  };
-
-  const handleMenuClick = () => {
-    setIsSidebarOpen(true);
-  };
-
-  const handleSidebarClose = () => {
-    setIsSidebarOpen(false);
-  };
-
-  const handleNavigate = (path) => {
-    setIsSidebarOpen(false);
-    navigate(path);
-  };
-
-  const sidebarRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target) &&
-        isSidebarOpen
-      ) {
-        setIsSidebarOpen(false);
-      }
-    };
-
-    window.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      window.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isSidebarOpen]);
-
+  // Fetch Admin Details
   useEffect(() => {
     const fetchAdminData = async () => {
-      const adminId = localStorage.getItem('userId'); // Retrieve admin ID from localStorage
+      const adminId = localStorage.getItem('userId');
       if (!adminId) {
         alert('Admin not found. Redirecting to login.');
         navigate('/login');
@@ -86,50 +42,88 @@ const AdminMainPage = () => {
         const response = await fetch(`http://localhost:5000/admin/${adminId}`);
         if (response.ok) {
           const data = await response.json();
-          setFollowingCount(data.followin); // Set following count
-          setFollowersCount(data.followers); // Set followers count
-          setAdminName(data.username); // Set admin name
+          setFollowingCount(data.followin);
+          setFollowersCount(data.followers);
+          setAdminName(data.username);
         } else {
-          const errorData = await response.json();
-          console.error('Error fetching admin data:', errorData);
-          alert('Failed to fetch admin data. Redirecting to login.');
+          console.error('Error fetching admin data');
+          alert('Failed to fetch data. Redirecting to login.');
           navigate('/login');
         }
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error fetching admin data:', error);
         alert('Something went wrong. Please try again.');
+        navigate('/login');
       }
     };
 
     fetchAdminData();
   }, [navigate]);
 
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
+    alert('Logging out...');
+    navigate('/login');
+  };
+
+  const showSidebar = () => setIsSidebarOpen(true);
+  const hideSidebar = () => setIsSidebarOpen(false);
+
+  // Close sidebar on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target) &&
+        isSidebarOpen
+      ) {
+        hideSidebar();
+      }
+    };
+    window.addEventListener('mousedown', handleClickOutside);
+    return () => window.removeEventListener('mousedown', handleClickOutside);
+  }, [isSidebarOpen]);
+
   return (
     <>
       <Header
-        onMenuClick={handleMenuClick}
+        onMenuClick={showSidebar}
         onLogout={handleLogout}
         isDarkMode={isDarkMode}
         onToggleDarkMode={handleToggleDarkMode}
       />
       <Sidebar
         isOpen={isSidebarOpen}
-        onClose={handleSidebarClose}
-        onNavigate={handleNavigate}
+        onClose={hideSidebar}
+        onNavigate={(path) => {
+          hideSidebar();
+          navigate(path);
+        }}
         ref={sidebarRef}
         role="admin"
       />
       <main id="mainContent" className="main-content">
-        <UserProfile
-          followingCount={followingCount}
-          followersCount={followersCount}
-          name={adminName} // Pass admin's name if needed
-        />
-        {/* Add additional admin components or content here */}
+        {/* Admin Profile Section */}
+        <section className="user-profile">
+          <div className="user-icon">👤</div>
+          <div className="follow-stats">
+            <div>
+              <span>{followingCount}</span> Following
+            </div>
+            <div>
+              <span>{followersCount}</span> Followers
+            </div>
+          </div>
+        </section>
+
+        {/* Admin Dashboard */}
         <section className="admin-dashboard">
           <h1>Welcome, {adminName}, to the Admin Dashboard</h1>
         </section>
-        {/* Buttons */}
+
+        {/* Navigation Buttons */}
         <section className="button-group">
           <button className="action-button" onClick={() => navigate('/admin/question-management')}>
             Question Management
