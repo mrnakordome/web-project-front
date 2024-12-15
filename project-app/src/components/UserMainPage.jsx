@@ -2,18 +2,22 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import '../styles/usermain.css';
 
 const UserMainPage = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
-  const [username, setUsername] = useState(''); // Added to display user name
+  const [username, setUsername] = useState('');
+  const [searchTarget, setSearchTarget] = useState('user'); // Default to 'user'
+  const [searchResult, setSearchResult] = useState(null);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const navigate = useNavigate();
+  const searchModalRef = useRef(null);
 
   useEffect(() => {
-    // Fetch dark mode preference
     const savedMode = localStorage.getItem('isDarkMode');
     if (savedMode === 'true') {
       setIsDarkMode(true);
@@ -29,13 +33,11 @@ const UserMainPage = () => {
     localStorage.setItem('isDarkMode', isDarkMode);
   }, [isDarkMode]);
 
-  // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
-      const userId = localStorage.getItem('userId'); // Retrieve the userId from localStorage
+      const userId = localStorage.getItem('userId');
 
       if (!userId) {
-        // Redirect to login if userId is not found
         alert('User not found. Redirecting to login.');
         navigate('/login');
         return;
@@ -47,7 +49,7 @@ const UserMainPage = () => {
           const data = await response.json();
           setFollowersCount(data.followers);
           setFollowingCount(data.following);
-          setUsername(data.username); // Set the user name
+          setUsername(data.username);
         } else {
           const errorData = await response.json();
           console.error('Error fetching user data:', errorData);
@@ -76,66 +78,98 @@ const UserMainPage = () => {
     navigate('/login');
   };
 
-  const handleMenuClick = () => {
-    setIsSidebarOpen(true);
-  };
-
-  const handleSidebarClose = () => {
-    setIsSidebarOpen(false);
-  };
-
-  const handleNavigate = (path) => {
-    setIsSidebarOpen(false);
-    navigate(path);
-  };
-
-  const sidebarRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target) &&
-        isSidebarOpen
-      ) {
-        setIsSidebarOpen(false);
-      }
-    };
-
-    window.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      window.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isSidebarOpen]);
-
-  const handleSearch = () => {
-    const query = document.getElementById('searchInput').value;
-    if (query) {
-      alert(`Searching for: ${query}`);
-    } else {
+  const handleSearch = async () => {
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) {
       alert('Please enter a search term.');
+      return;
+    }
+
+    const endpoint =
+      searchTarget === 'user'
+        ? `http://localhost:5000/user/search?username=${query}`
+        : `http://localhost:5000/admin/search?username=${query}`;
+
+    try {
+      const response = await fetch(endpoint);
+      if (response.ok) {
+        const data = await response.json();
+        setSearchResult(data);
+        setIsSearchModalOpen(true);
+      } else {
+        alert('User or Admin not found.');
+      }
+    } catch (error) {
+      console.error('Error during search:', error);
+    }
+  };
+
+  const handleFollow = async () => {
+    if (!searchResult) return;
+
+    const currentUserId = localStorage.getItem('userId');
+    try {
+      const response = await fetch('http://localhost:5000/follow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          followerId: parseInt(currentUserId, 10),
+          followingId: searchResult.id,
+          role: searchTarget,
+        }),
+      });
+
+      if (response.ok) {
+        alert(`You are now following ${searchResult.username}.`);
+        setIsSearchModalOpen(false);
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Something went wrong.');
+      }
+    } catch (error) {
+      console.error('Error following user:', error);
     }
   };
 
   return (
     <>
       <Header
-        onMenuClick={handleMenuClick}
+        onMenuClick={() => setIsSidebarOpen(true)}
         onLogout={handleLogout}
         isDarkMode={isDarkMode}
         onToggleDarkMode={handleToggleDarkMode}
       />
       <Sidebar
         isOpen={isSidebarOpen}
-        onClose={handleSidebarClose}
-        onNavigate={handleNavigate}
-        ref={sidebarRef}
+        onClose={() => setIsSidebarOpen(false)}
         role="user"
       />
       <main id="mainContent" className="main-content">
-        {/* Search Bar */}
+        {/* Search Bar with User/Admin Selection */}
         <section className="search-container">
-          <input type="text" id="searchInput" placeholder="Search users..." />
+          <div className="search-options">
+            <label>
+              <input
+                type="radio"
+                name="searchTarget"
+                value="user"
+                checked={searchTarget === 'user'}
+                onChange={() => setSearchTarget('user')}
+              />
+              User
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="searchTarget"
+                value="admin"
+                checked={searchTarget === 'admin'}
+                onChange={() => setSearchTarget('admin')}
+              />
+              Admin
+            </label>
+          </div>
+          <input type="text" id="searchInput" placeholder="Search..." />
           <button onClick={handleSearch}>Search</button>
         </section>
 
@@ -157,19 +191,22 @@ const UserMainPage = () => {
 
         {/* Buttons */}
         <section className="button-group">
-          <button
-            className="action-button"
-            onClick={() => navigate('/user/user-question-management')}
-          >
+          <button onClick={() => navigate('/user/user-question-management')}>
             Question Management
           </button>
-          <button
-            className="action-button"
-            onClick={() => navigate('/leaderboard')}
-          >
-            Leaderboard
-          </button>
+          <button onClick={() => navigate('/leaderboard')}>Leaderboard</button>
         </section>
+
+        {/* Search Result Modal */}
+        {isSearchModalOpen && searchResult && (
+          <dialog open className="search-modal">
+            <div>
+              <h2>{searchResult.username}</h2>
+              <button onClick={handleFollow}>Follow</button>
+              <button onClick={() => setIsSearchModalOpen(false)}>Close</button>
+            </div>
+          </dialog>
+        )}
       </main>
     </>
   );
