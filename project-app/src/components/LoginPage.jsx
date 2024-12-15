@@ -9,126 +9,102 @@ const LoginPage = () => {
   const [userType, setUserType] = useState('user'); // Default to 'user'
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const registerModalRef = useRef(null);
+  const [registerType, setRegisterType] = useState('user'); // Register as user/admin
+  const [registerFields, setRegisterFields] = useState({
+    username: '',
+    password: '',
+    passwordAgain: '',
+  });
 
+  const registerModalRef = useRef(null);
   const navigate = useNavigate();
 
-  // Effect to handle dark mode class and localStorage
   useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
+    const savedMode = localStorage.getItem('isDarkMode');
+    if (savedMode === 'true') setIsDarkMode(true);
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle('dark-mode', isDarkMode);
     localStorage.setItem('isDarkMode', isDarkMode);
   }, [isDarkMode]);
 
-  // Effect to retrieve dark mode preference from localStorage
   useEffect(() => {
-    const savedMode = localStorage.getItem('isDarkMode');
-    if (savedMode === 'true') {
-      setIsDarkMode(true);
-    }
+    document.title = 'Login';
   }, []);
 
-  // Effect to set the document title
-  useEffect(() => {
-    document.title = "Login";
-  }, []);
-
-  const handleToggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
-  };
-
-  const handleUserTypeChange = (e) => {
-    setUserType(e.target.value);
-  };
-
-  const handleUsernameChange = (e) => {
-    setUsername(e.target.value);
-  };
-
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-  };
+  const handleToggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
     try {
       const response = await fetch('http://localhost:5000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, role: userType }),
       });
-  
+
       if (response.ok) {
         const userData = await response.json();
-        console.log('Login successful:', userData);
-  
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('userRole', userData.role);
-        localStorage.setItem('userId', userData.id); // Save the user ID in localStorage
-  
-        if (userData.role === 'admin') {
-          alert('Logged in successfully! Redirecting to Admin Main Page...');
-          navigate('/admin');
-        } else if (userData.role === 'user') {
-          alert('Logged in successfully! Redirecting to User Main Page...');
-          navigate('/user'); // Navigate to UserMainPage
-        }
+        localStorage.setItem('userId', userData.id);
+
+        if (userData.role === 'admin') navigate('/admin');
+        else if (userData.role === 'user') navigate('/user');
       } else {
         const errorData = await response.json();
         alert(errorData.error || 'Invalid username or password');
       }
     } catch (error) {
-      console.error('Error during login:', error);
-      alert('Something went wrong. Please try again.');
+      console.error('Login Error:', error);
+      alert('Something went wrong.');
     }
   };
-  
-  
 
   const showRegisterModal = () => {
-    if (registerModalRef.current) {
-      registerModalRef.current.showModal(); // Show the modal using the native method
-    }
+    // Reset register fields when modal is opened
+    setRegisterFields({ username: '', password: '', passwordAgain: '' });
+    registerModalRef.current?.showModal();
   };
 
-  const closeRegisterModal = () => {
-    if (registerModalRef.current) {
-      registerModalRef.current.close(); // Close the modal using the native method
-    }
-  };
+  const closeRegisterModal = () => registerModalRef.current?.close();
 
-  const handleRegisterLinkClick = () => {
-    showRegisterModal();
-  };
+  const handleRegister = async () => {
+    const { username, password, passwordAgain } = registerFields;
 
-  const handleRegister = () => {
-    const registerUsername = document.getElementById('registerUsername');
-    const registerPassword = document.getElementById('registerPassword');
-    const registerPasswordAgain = document.getElementById('registerPasswordAgain');
-
-    if (!registerUsername.value.trim() || !registerPassword.value.trim() || !registerPasswordAgain.value.trim()) {
+    if (!username.trim() || !password.trim() || !passwordAgain.trim()) {
       alert('All fields are required.');
       return;
     }
 
-    if (registerPassword.value !== registerPasswordAgain.value) {
+    if (password !== passwordAgain) {
       alert('Passwords do not match.');
       return;
     }
 
-    alert('Registration successful! Returning to login menu.');
+    try {
+      const response = await fetch('http://localhost:5000/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          password,
+          role: registerType,
+        }),
+      });
 
-    // Clear the fields
-    registerUsername.value = '';
-    registerPassword.value = '';
-    registerPasswordAgain.value = '';
-
-    // Close the modal
-    closeRegisterModal();
+      if (response.ok) {
+        alert('Registration successful! You can now log in.');
+        closeRegisterModal();
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Registration failed.');
+      }
+    } catch (error) {
+      console.error('Registration Error:', error);
+      alert('Something went wrong.');
+    }
   };
 
   return (
@@ -137,13 +113,13 @@ const LoginPage = () => {
       <main className="container">
         <LoginForm
           userType={userType}
-          onUserTypeChange={handleUserTypeChange}
+          onUserTypeChange={(e) => setUserType(e.target.value)}
           username={username}
-          onUsernameChange={handleUsernameChange}
+          onUsernameChange={(e) => setUsername(e.target.value)}
           password={password}
-          onPasswordChange={handlePasswordChange}
+          onPasswordChange={(e) => setPassword(e.target.value)}
           onSubmit={handleSubmit}
-          onRegisterLinkClick={handleRegisterLinkClick} // Pass the handler as a prop
+          onRegisterLinkClick={showRegisterModal}
         />
       </main>
 
@@ -153,12 +129,45 @@ const LoginPage = () => {
           <span className="close" onClick={closeRegisterModal}>&times;</span>
           <h2>Register</h2>
           <form>
+            <label htmlFor="registerType">Register As:</label>
+            <select
+              id="registerType"
+              onChange={(e) => setRegisterType(e.target.value)}
+              value={registerType}
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
             <label htmlFor="registerUsername">Username:</label>
-            <input type="text" id="registerUsername" placeholder="Enter your username" />
+            <input
+              type="text"
+              id="registerUsername"
+              placeholder="Enter your username"
+              value={registerFields.username}
+              onChange={(e) =>
+                setRegisterFields({ ...registerFields, username: e.target.value })
+              }
+            />
             <label htmlFor="registerPassword">Password:</label>
-            <input type="password" id="registerPassword" placeholder="Enter your password" />
+            <input
+              type="password"
+              id="registerPassword"
+              placeholder="Enter your password"
+              value={registerFields.password}
+              onChange={(e) =>
+                setRegisterFields({ ...registerFields, password: e.target.value })
+              }
+            />
             <label htmlFor="registerPasswordAgain">Password Again:</label>
-            <input type="password" id="registerPasswordAgain" placeholder="Confirm your password" />
+            <input
+              type="password"
+              id="registerPasswordAgain"
+              placeholder="Confirm your password"
+              value={registerFields.passwordAgain}
+              onChange={(e) =>
+                setRegisterFields({ ...registerFields, passwordAgain: e.target.value })
+              }
+            />
             <button type="button" onClick={handleRegister}>
               Sign Up
             </button>
