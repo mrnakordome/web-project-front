@@ -11,6 +11,7 @@ const UserQuestionManagement = () => {
   const [questionHistory, setQuestionHistory] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [questionOptions, setQuestionOptions] = useState([]);
+  const [selectedOption, setSelectedOption] = useState('');
 
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
@@ -24,7 +25,7 @@ const UserQuestionManagement = () => {
     fetchCategories();
   }, []);
 
-  // Fetch categories from the server
+  /* Fetch categories */
   const fetchCategories = async () => {
     try {
       const response = await fetch('http://localhost:5000/categories');
@@ -35,7 +36,7 @@ const UserQuestionManagement = () => {
     }
   };
 
-  // Fetch question history for the user
+  /* Fetch question history */
   const fetchQuestionHistory = async () => {
     const userId = localStorage.getItem('userId');
     if (!userId) return alert('User not found. Please log in again.');
@@ -54,28 +55,32 @@ const UserQuestionManagement = () => {
     }
   };
 
-  // Fetch a random question
+  /* Fetch a random unanswered question */
   const fetchRandomQuestion = async () => {
+    const userId = localStorage.getItem('userId');
     try {
-      const response = await fetch('http://localhost:5000/questions/random');
+      const response = await fetch(`http://localhost:5000/user/${userId}/questions/random`);
       if (response.ok) {
         const data = await response.json();
         displayQuestion(data);
       } else {
-        alert('No questions available.');
+        alert('No unanswered questions available.');
       }
     } catch (error) {
       console.error('Error fetching random question:', error);
     }
   };
 
-  // Fetch questions by category
+  /* Fetch questions by category */
   const fetchCategoryQuestion = async () => {
     const categoryId = document.getElementById('categorySelect').value;
+    const userId = localStorage.getItem('userId');
     if (!categoryId) return alert('Please select a category.');
 
     try {
-      const response = await fetch(`http://localhost:5000/questions/category/${categoryId}`);
+      const response = await fetch(
+        `http://localhost:5000/questions/category/${categoryId}?userId=${userId}`
+      );
       if (response.ok) {
         const data = await response.json();
         displayQuestion(data);
@@ -87,23 +92,44 @@ const UserQuestionManagement = () => {
     }
   };
 
-  // Display question modal
+  /* Display question modal */
   const displayQuestion = (question) => {
     setCurrentQuestion(question);
     setQuestionOptions(Object.entries(question.options));
+    setSelectedOption('');
     showModal(questionModalRef);
   };
 
-  // Submit an answer for a question
-  const submitAnswer = (selectedOption) => {
-    alert(`You selected: ${selectedOption}`);
-    closeModal(questionModalRef);
+  /* Submit answer */
+  const submitAnswer = async () => {
+    const userId = localStorage.getItem('userId');
+    if (!selectedOption) return alert('Please select an option.');
+
+    try {
+      const response = await fetch(`http://localhost:5000/user/${userId}/questions/answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionId: currentQuestion.id,
+          userAnswer: selectedOption,
+        }),
+      });
+
+      if (response.ok) {
+        alert('Answer submitted successfully!');
+        closeModal(questionModalRef);
+      } else {
+        alert('Failed to submit answer.');
+      }
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+    }
   };
 
-  // Show modal
+  /* Show modal */
   const showModal = (modalRef) => modalRef.current?.showModal();
 
-  // Close modal
+  /* Close modal */
   const closeModal = (modalRef) => modalRef.current?.close();
 
   return (
@@ -184,11 +210,16 @@ const UserQuestionManagement = () => {
             <h2>{currentQuestion?.test}</h2>
             <div>
               {questionOptions.map(([option, text]) => (
-                <button key={option} onClick={() => submitAnswer(option)}>
+                <button
+                  key={option}
+                  onClick={() => setSelectedOption(option)}
+                  className={selectedOption === option ? 'selected' : ''}
+                >
                   {option}: {text}
                 </button>
               ))}
             </div>
+            <button onClick={submitAnswer}>Submit</button>
           </div>
         </dialog>
       </main>
