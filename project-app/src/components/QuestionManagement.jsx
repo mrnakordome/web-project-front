@@ -7,6 +7,7 @@ import '../styles/question_management.css';
 const QuestionManagement = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [questions, setQuestions] = useState([]); // State for admin's questions
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
 
@@ -37,6 +38,7 @@ const QuestionManagement = () => {
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
     alert('Logging out...');
     navigate('/login');
   };
@@ -50,6 +52,31 @@ const QuestionManagement = () => {
   const closeModal = (modalRef) => {
     if (modalRef.current) {
       modalRef.current.close();
+    }
+  };
+
+  const fetchQuestions = async () => {
+    const adminId = localStorage.getItem('userId'); // Get admin ID from localStorage
+    if (!adminId) {
+      alert('Admin not found. Redirecting to login.');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5000/admin/${adminId}/questions`);
+      if (response.ok) {
+        const data = await response.json();
+        setQuestions(data.questions); // Update the questions state
+        showModal(myQuestionsModalRef); // Show the modal after fetching data
+      } else {
+        const errorData = await response.json();
+        console.error('Error fetching questions:', errorData);
+        alert('Failed to fetch questions.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Something went wrong. Please try again.');
     }
   };
 
@@ -75,7 +102,7 @@ const QuestionManagement = () => {
         <section className="container">
           <h1>Question Management</h1>
           <div className="button-group">
-            <button className="action-button" onClick={() => showModal(myQuestionsModalRef)}>
+            <button className="action-button" onClick={fetchQuestions}>
               Show My Questions
             </button>
             <button className="action-button" onClick={() => showModal(addQuestionModalRef)}>
@@ -90,8 +117,15 @@ const QuestionManagement = () => {
             <span className="close" onClick={() => closeModal(myQuestionsModalRef)}>&times;</span>
             <h2>My Questions</h2>
             <div className="question-list">
-              <div className="question-item">What is 2 + 2?</div>
-              <div className="question-item">What is the capital of France?</div>
+              {questions.length > 0 ? (
+                questions.map((question, index) => (
+                  <div className="question-item" key={index}>
+                    {question}
+                  </div>
+                ))
+              ) : (
+                <div>No questions found.</div>
+              )}
             </div>
           </div>
         </dialog>

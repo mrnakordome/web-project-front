@@ -7,7 +7,7 @@ import '../styles/category_management.css';
 const CategoryManagement = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+  const [categories, setCategories] = useState([]); // State to hold categories
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
 
@@ -35,22 +35,6 @@ const CategoryManagement = () => {
     document.title = "Category Management";
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target) &&
-        isSidebarOpen
-      ) {
-        setIsSidebarOpen(false);
-      }
-    };
-    window.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      window.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isSidebarOpen]);
-
   const handleToggleDarkMode = () => {
     setIsDarkMode((prev) => !prev);
   };
@@ -62,19 +46,6 @@ const CategoryManagement = () => {
     navigate('/login');
   };
 
-  const handleMenuClick = () => {
-    setIsSidebarOpen(true);
-  };
-
-  const handleSidebarClose = () => {
-    setIsSidebarOpen(false);
-  };
-
-  const handleNavigate = (path) => {
-    setIsSidebarOpen(false);
-    navigate(path);
-  };
-
   const showModal = (modalRef) => {
     if (modalRef.current) {
       modalRef.current.showModal(); // Use dialog's native showModal method
@@ -84,6 +55,21 @@ const CategoryManagement = () => {
   const closeModal = (modalRef) => {
     if (modalRef.current) {
       modalRef.current.close(); // Use dialog's native close method
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/categories'); // Fetch categories from backend
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+        showModal(categoriesModalRef); // Show modal after fetching data
+      } else {
+        console.error('Failed to fetch categories.');
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
     }
   };
 
@@ -101,15 +87,18 @@ const CategoryManagement = () => {
   return (
     <>
       <Header
-        onMenuClick={handleMenuClick}
+        onMenuClick={() => setIsSidebarOpen(true)}
         onLogout={handleLogout}
         isDarkMode={isDarkMode}
         onToggleDarkMode={handleToggleDarkMode}
       />
       <Sidebar
         isOpen={isSidebarOpen}
-        onClose={handleSidebarClose}
-        onNavigate={handleNavigate}
+        onClose={() => setIsSidebarOpen(false)}
+        onNavigate={(path) => {
+          setIsSidebarOpen(false);
+          navigate(path);
+        }}
         ref={sidebarRef}
         role="admin"
       />
@@ -117,7 +106,7 @@ const CategoryManagement = () => {
         <div className="container">
           <h1>Category Management</h1>
           <div className="button-group">
-            <button className="action-button" onClick={() => showModal(categoriesModalRef)}>
+            <button className="action-button" onClick={fetchCategories}>
               Show Current Categories
             </button>
             <button className="action-button" onClick={() => showModal(addCategoryModalRef)}>
@@ -126,19 +115,26 @@ const CategoryManagement = () => {
           </div>
         </div>
 
+        {/* Show Current Categories Modal */}
         <dialog id="categoriesModal" ref={categoriesModalRef}>
           <div className="modal-content">
             <span className="close" onClick={() => closeModal(categoriesModalRef)}>&times;</span>
-            <h2>Select a Category</h2>
-            <select>
-              <option value="">Select Category</option>
-              <option value="math">Math</option>
-              <option value="science">Science</option>
-              <option value="history">History</option>
-            </select>
+            <h2>Current Categories</h2>
+            <div className="category-list">
+              {categories.length > 0 ? (
+                categories.map((category) => (
+                  <div className="category-item" key={category.id}>
+                    {category.name}
+                  </div>
+                ))
+              ) : (
+                <div>No categories found.</div>
+              )}
+            </div>
           </div>
         </dialog>
 
+        {/* Add New Category Modal */}
         <dialog id="addCategoryModal" ref={addCategoryModalRef}>
           <div className="modal-content">
             <span className="close" onClick={() => closeModal(addCategoryModalRef)}>&times;</span>
