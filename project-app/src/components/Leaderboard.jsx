@@ -1,14 +1,15 @@
-// src/components/Leaderboard.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import '../styles/leaderboard.css'; // Ensure this path is correct
-
+import '../styles/leaderboard.css';
 
 const Leaderboard = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUserRank, setCurrentUserRank] = useState(null);
 
   const navigate = useNavigate();
 
@@ -36,6 +37,7 @@ const Leaderboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
     alert('Logging out...');
     navigate('/login');
   };
@@ -72,6 +74,36 @@ const Leaderboard = () => {
     };
   }, [isSidebarOpen]);
 
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        // Fetch the leaderboard data from the backend
+        const response = await fetch('http://localhost:5000/leaderboard');
+        if (response.ok) {
+          const data = await response.json();
+          setLeaderboard(data);
+
+          // Get the current user's ID from localStorage
+          const currentUserId = localStorage.getItem('userId');
+          if (currentUserId) {
+            // Find the current user and their rank
+            const currentUserIndex = data.findIndex(user => user.id === parseInt(currentUserId, 10));
+            if (currentUserIndex !== -1) {
+              setCurrentUser(data[currentUserIndex]);
+              setCurrentUserRank(currentUserIndex + 1); // Rank is index + 1
+            }
+          }
+        } else {
+          console.error('Failed to fetch leaderboard data');
+        }
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
+
   return (
     <>
       <Header
@@ -98,52 +130,30 @@ const Leaderboard = () => {
                 <th>Score</th>
               </tr>
             </thead>
-            <tbody>
-              {/* Top 3 Players with Trophy Icons */}
-              <tr className="top-player">
-                <td>1 <span className="trophy">🥇</span></td>
-                <td>Alice</td>
-                <td>1500</td>
-              </tr>
-              <tr className="top-player">
-                <td>2 <span className="trophy">🥈</span></td>
-                <td>Bob</td>
-                <td>1400</td>
-              </tr>
-              <tr className="top-player">
-                <td>3 <span className="trophy">🥉</span></td>
-                <td>Charlie</td>
-                <td>1300</td>
-              </tr>
-              {/* Other Players */}
-              <tr>
-                <td>4</td>
-                <td>David</td>
-                <td>1200</td>
-              </tr>
-              <tr>
-                <td>5</td>
-                <td>Emma</td>
-                <td>1100</td>
-              </tr>
-              {/* Current User Highlighted */}
-              <tr style={{ backgroundColor: '#cec69e' }}>
-                <td>6</td>
-                <td>You</td>
-                <td>1000</td>
-              </tr>
-              {/* More Players */}
-              <tr>
-                <td>7</td>
-                <td>Frank</td>
-                <td>900</td>
-              </tr>
-              <tr>
-                <td>8</td>
-                <td>Grace</td>
-                <td>800</td>
-              </tr>
-              {/* Add more players as needed */}
+              <tbody>
+                {leaderboard.slice(0, 10).map((user, index) => (
+                  <tr
+                    key={user.id}
+                    className={`
+                      ${index < 3 ? 'top-player' : ''} 
+                      ${currentUser && user.id === currentUser.id ? 'current-user-row' : ''}
+                    `}
+                  >
+                    <td>
+                      {index + 1}{' '}
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : ''}
+                    </td>
+                    <td>{user.username}</td>
+                    <td>{user.points}</td>
+                  </tr>
+                ))}
+                {currentUserRank > 10 && (
+                  <tr key={currentUser?.id} className="current-user-row">
+                    <td>{currentUserRank}</td>
+                    <td>{currentUser?.username || 'You'}</td>
+                    <td>{currentUser?.points || 0}</td>
+                  </tr>
+                )}
             </tbody>
           </table>
         </section>
