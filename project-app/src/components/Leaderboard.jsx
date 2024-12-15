@@ -80,16 +80,18 @@ const Leaderboard = () => {
         // Fetch the leaderboard data from the backend
         const response = await fetch('http://localhost:5000/leaderboard');
         if (response.ok) {
-          const data = await response.json();
-          setLeaderboard(data);
+          const { leaderboard } = await response.json(); // Destructure leaderboard
+          setLeaderboard(leaderboard);
 
           // Get the current user's ID from localStorage
-          const currentUserId = localStorage.getItem('userId');
+          const currentUserId = parseInt(localStorage.getItem('userId'), 10);
           if (currentUserId) {
             // Find the current user and their rank
-            const currentUserIndex = data.findIndex(user => user.id === parseInt(currentUserId, 10));
+            const currentUserIndex = leaderboard.findIndex(
+              (user) => user.id === currentUserId
+            );
             if (currentUserIndex !== -1) {
-              setCurrentUser(data[currentUserIndex]);
+              setCurrentUser(leaderboard[currentUserIndex]);
               setCurrentUserRank(currentUserIndex + 1); // Rank is index + 1
             }
           }
@@ -122,22 +124,24 @@ const Leaderboard = () => {
       <main className="main-content">
         <section className="leaderboard-container">
           <h1 className="leaderboard-title">Leaderboard</h1>
-          <table className="leaderboard-table">
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Player</th>
-                <th>Score</th>
-              </tr>
-            </thead>
+          {leaderboard.length === 0 ? (
+            <p className="empty-leaderboard">No leaderboard data available.</p>
+          ) : (
+            <table className="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
               <tbody>
                 {leaderboard.slice(0, 10).map((user, index) => (
                   <tr
                     key={user.id}
-                    className={`
-                      ${index < 3 ? 'top-player' : ''} 
-                      ${currentUser && user.id === currentUser.id ? 'current-user-row' : ''}
-                    `}
+                    className={`${
+                      index < 3 ? 'top-player' : ''
+                    } ${currentUser && user.id === currentUser.id ? 'current-user-row' : ''}`}
                   >
                     <td>
                       {index + 1}{' '}
@@ -154,8 +158,9 @@ const Leaderboard = () => {
                     <td>{currentUser?.points || 0}</td>
                   </tr>
                 )}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          )}
         </section>
       </main>
     </>
