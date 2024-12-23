@@ -147,7 +147,7 @@ const QuestionManagement = () => {
                       <li>D: {q.options.D}</li>
                     </ul>
                     <p><strong>Correct Answer:</strong> {q.correctAnswer}</p>
-                    <p><strong>Category:</strong> {categories.find((c) => c.id === q.categoryId)?.name || 'Unknown'}</p>
+                    <p><strong>Category:</strong> {q.categoryId}</p>
                     <p><strong>Difficulty:</strong> {q.difficulty}</p>
                   </div>
                 ))
