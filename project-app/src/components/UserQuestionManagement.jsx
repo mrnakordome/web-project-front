@@ -39,8 +39,12 @@ const UserQuestionManagement = () => {
   const fetchCategories = async () => {
     try {
       const response = await fetch('http://localhost:5000/categories');
-      const data = await response.json();
-      setCategories(data);
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+      } else {
+        console.error('Failed to fetch categories.');
+      }
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
@@ -81,7 +85,7 @@ const UserQuestionManagement = () => {
     }
   };
 
-  /* Fetch questions by category */
+  /* Fetch a new question from selected category */
   const fetchCategoryQuestion = async () => {
     const categoryId = document.getElementById('categorySelect').value;
     const userId = localStorage.getItem('userId');
@@ -89,12 +93,16 @@ const UserQuestionManagement = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/questions/category/${categoryId}?userId=${userId}`
+        `http://localhost:5000/user/${userId}/questions/category/${categoryId}`
       );
       if (response.ok) {
         const data = await response.json();
+        displayQuestion(data); // Display the fetched question
+      } else if (response.status === 404) {
+        const errorData = await response.json();
+        alert(errorData.error || 'No unanswered questions available in this category.');
       } else {
-        alert('No questions available for this category.');
+        alert('Failed to fetch question from category.');
       }
     } catch (error) {
       console.error('Error fetching category question:', error);
@@ -104,9 +112,9 @@ const UserQuestionManagement = () => {
   /* Display question modal */
   const displayQuestion = (question) => {
     setCurrentQuestion(question);
-    setQuestionOptions(Object.entries(question.options));
-    setSelectedOption('');
-    showModal(questionModalRef);
+    setQuestionOptions(Object.entries(question.options)); // Assuming options is an object
+    setSelectedOption(''); // Reset the selected option
+    showModal(questionModalRef); // Show the question modal
   };
 
   /* Submit answer */
@@ -125,16 +133,11 @@ const UserQuestionManagement = () => {
       });
 
       if (response.ok) {
-        if(currentQuestion.correctAnswer == selectedOption) {
-          alert('Correct Answer!');
-        }
-        else {
-          alert('Wrong Answer!');
-        }
-        
-        closeModal(questionModalRef);
+        const data = await response.json();
+        alert(data.message || 'Answer submitted successfully!');
+        closeModal(questionModalRef); // Close the question modal
       } else {
-        alert('Failed to submit answer.', currentQuestion);
+        alert('Failed to submit answer.');
       }
     } catch (error) {
       console.error('Error submitting answer:', error);
@@ -188,7 +191,7 @@ const UserQuestionManagement = () => {
                 <select id="categorySelect">
                   <option value="">Select Category</option>
                   {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
+                    <option key={c._id} value={c._id}>
                       {c.name}
                     </option>
                   ))}
