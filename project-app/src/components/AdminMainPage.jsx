@@ -19,13 +19,21 @@ const AdminMainPage = () => {
     const savedMode = localStorage.getItem('isDarkMode');
     if (savedMode === 'true') {
       setIsDarkMode(true);
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
     }
   }, []);
 
   const handleToggleDarkMode = () => {
     setIsDarkMode((prev) => !prev);
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('isDarkMode', !isDarkMode);
+    if (isDarkMode) {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('isDarkMode', 'false');
+    } else {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('isDarkMode', 'true');
+    }
   };
 
   // Fetch Admin Details
@@ -42,7 +50,7 @@ const AdminMainPage = () => {
         const response = await fetch(`http://localhost:5000/admin/${adminId}`);
         if (response.ok) {
           const data = await response.json();
-          setFollowingCount(data.followin);
+          setFollowingCount(data.following);
           setFollowersCount(data.followers);
           setAdminName(data.username);
         } else {

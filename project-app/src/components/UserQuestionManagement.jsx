@@ -23,7 +23,17 @@ const UserQuestionManagement = () => {
 
   useEffect(() => {
     fetchCategories();
+    
+    // Check if dark mode preference exists in localStorage
+    const savedMode = localStorage.getItem('isDarkMode');
+    if (savedMode === 'true') setIsDarkMode(true);
   }, []);
+
+  // Apply dark mode when it changes
+  useEffect(() => {
+    document.body.classList.toggle('dark-mode', isDarkMode);
+    localStorage.setItem('isDarkMode', isDarkMode);
+  }, [isDarkMode]);
 
   /* Fetch categories */
   const fetchCategories = async () => {
@@ -141,7 +151,7 @@ const UserQuestionManagement = () => {
           navigate('/login');
         }}
         isDarkMode={isDarkMode}
-        onToggleDarkMode={() => setIsDarkMode((prev) => !prev)}
+        onToggleDarkMode={() => setIsDarkMode((prev) => !prev)} // Toggle dark mode on button click
       />
       <Sidebar
         isOpen={isSidebarOpen}

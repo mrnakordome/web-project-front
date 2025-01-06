@@ -25,6 +25,14 @@ const QuestionManagement = () => {
   /* Fetch Categories on Load */
   useEffect(() => {
     fetchCategories();
+    // Fetch Dark Mode preference from localStorage
+    const savedMode = localStorage.getItem('isDarkMode');
+    if (savedMode === 'true') {
+      setIsDarkMode(true);
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
   }, []);
 
   const fetchCategories = async () => {
@@ -109,13 +117,28 @@ const QuestionManagement = () => {
   const showModal = (modalRef) => modalRef.current && modalRef.current.showModal();
   const closeModal = (modalRef) => modalRef.current && modalRef.current.close();
 
+  const handleToggleDarkMode = () => {
+    setIsDarkMode((prev) => {
+      const newMode = !prev;
+      // Toggle dark mode class
+      if (newMode) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('isDarkMode', 'true');
+      } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('isDarkMode', 'false');
+      }
+      return newMode;
+    });
+  };
+
   return (
     <>
       <Header
         onMenuClick={() => setIsSidebarOpen(true)}
         onLogout={() => navigate('/login')}
         isDarkMode={isDarkMode}
-        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        onToggleDarkMode={handleToggleDarkMode}
       />
       <Sidebar
         isOpen={isSidebarOpen}
