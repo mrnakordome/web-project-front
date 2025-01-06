@@ -93,7 +93,6 @@ const UserQuestionManagement = () => {
       );
       if (response.ok) {
         const data = await response.json();
-        displayQuestion(data);
       } else {
         alert('No questions available for this category.');
       }
@@ -120,16 +119,22 @@ const UserQuestionManagement = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          questionId: currentQuestion.id,
+          questionId: currentQuestion._id,
           userAnswer: selectedOption,
         }),
       });
 
       if (response.ok) {
-        alert('Answer submitted successfully!');
+        if(currentQuestion.correctAnswer == selectedOption) {
+          alert('Correct Answer!');
+        }
+        else {
+          alert('Wrong Answer!');
+        }
+        
         closeModal(questionModalRef);
       } else {
-        alert('Failed to submit answer.');
+        alert('Failed to submit answer.', currentQuestion);
       }
     } catch (error) {
       console.error('Error submitting answer:', error);
