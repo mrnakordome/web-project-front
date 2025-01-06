@@ -112,37 +112,45 @@ const UserQuestionManagement = () => {
   /* Display question modal */
   const displayQuestion = (question) => {
     setCurrentQuestion(question);
-    setQuestionOptions(Object.entries(question.options)); // Assuming options is an object
+    if (question.options) {
+      setQuestionOptions(Object.entries(question.options)); // Assuming options is an object
+    } else {
+      setQuestionOptions([]);
+    }
     setSelectedOption(''); // Reset the selected option
     showModal(questionModalRef); // Show the question modal
   };
+  
 
   /* Submit answer */
-  const submitAnswer = async () => {
-    const userId = localStorage.getItem('userId');
-    if (!selectedOption) return alert('Please select an option.');
+  // Submit answer
+const submitAnswer = async () => {
+  const userId = localStorage.getItem('userId');
+  if (!selectedOption) return alert('Please select an option.');
 
-    try {
-      const response = await fetch(`http://localhost:5000/user/${userId}/questions/answer`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          questionId: currentQuestion._id,
-          userAnswer: selectedOption,
-        }),
-      });
+  try {
+    const response = await fetch(`http://localhost:5000/user/${userId}/questions/answer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        questionId: currentQuestion.id, // Changed from _id to id
+        userAnswer: selectedOption,
+      }),
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        alert(data.message || 'Answer submitted successfully!');
-        closeModal(questionModalRef); // Close the question modal
-      } else {
-        alert('Failed to submit answer.');
-      }
-    } catch (error) {
-      console.error('Error submitting answer:', error);
+    if (response.ok) {
+      const data = await response.json();
+      alert(data.message || 'Answer submitted successfully!');
+      closeModal(questionModalRef); // Close the question modal
+    } else {
+      const errorData = await response.json();
+      alert(errorData.error || 'Failed to submit answer.');
     }
-  };
+  } catch (error) {
+    console.error('Error submitting answer:', error);
+  }
+};
+
 
   /* Show modal */
   const showModal = (modalRef) => modalRef.current?.showModal();
