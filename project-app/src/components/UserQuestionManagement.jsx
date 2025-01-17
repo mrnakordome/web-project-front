@@ -21,6 +21,11 @@ const UserQuestionManagement = () => {
   const questionHistoryModalRef = useRef(null);
   const questionModalRef = useRef(null);
 
+  function getCategoryIdByName(categories, category_name) {
+    const category = categories.find(cat => cat.name === category_name);
+    return category ? category.id : null; // Return _id or null if not found
+  }
+
   useEffect(() => {
     fetchCategories();
     
@@ -87,7 +92,8 @@ const UserQuestionManagement = () => {
 
   /* Fetch a new question from selected category */
   const fetchCategoryQuestion = async () => {
-    const categoryId = document.getElementById('categorySelect').value;
+    const category_name = document.getElementById('categorySelect').value;
+    const categoryId = getCategoryIdByName(categories, category_name);
     const userId = localStorage.getItem('userId');
     if (!categoryId) return alert('Please select a category.');
 
