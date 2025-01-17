@@ -78,7 +78,7 @@ const Leaderboard = () => {
     const fetchLeaderboard = async () => {
       try {
         // Fetch the leaderboard data from the backend
-        const response = await fetch('http://localhost:5000/leaderboard');
+        const response = await fetch('http://localhost:5000/user/leaderboard');
         if (response.ok) {
           const { leaderboard } = await response.json(); // Destructure leaderboard
           setLeaderboard(leaderboard);
