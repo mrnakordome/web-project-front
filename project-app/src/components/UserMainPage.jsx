@@ -87,8 +87,8 @@ const UserMainPage = () => {
 
     const endpoint =
       searchTarget === 'user'
-        ? `http://localhost:5000/user/search?username=${query}`
-        : `http://localhost:5000/admin/search?username=${query}`;
+        ? `http://localhost:5000/user/username/${query}`
+        : `http://localhost:5000/admin/username/${query}`;
 
     try {
       const response = await fetch(endpoint);
@@ -108,6 +108,7 @@ const UserMainPage = () => {
     if (!searchResult) return;
 
     const currentUserId = localStorage.getItem('userId');
+    console.log("Hello");
     try {
       const response = await fetch('http://localhost:5000/follow', {
         method: 'POST',
