@@ -97,7 +97,12 @@ const UserMainPage = () => {
         setSearchResult(data);
         setIsSearchModalOpen(true);
       } else {
-        alert('User or Admin not found.');
+        if(searchTarget === "user"){
+          alert('User not found.');
+        }
+        else{
+          alert('Admin not found.');
+        }
       }
     } catch (error) {
       console.error('Error during search:', error);
