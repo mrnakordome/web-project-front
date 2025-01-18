@@ -108,13 +108,12 @@ const UserMainPage = () => {
     if (!searchResult) return;
 
     const currentUserId = localStorage.getItem('userId');
-    console.log("Hello");
     try {
-      const response = await fetch('http://localhost:5000/follow', {
+      const response = await fetch('http://localhost:5000/user/follow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          followerId: parseInt(currentUserId, 10),
+          followerId: currentUserId,
           followingId: searchResult.id,
           role: searchTarget,
         }),
