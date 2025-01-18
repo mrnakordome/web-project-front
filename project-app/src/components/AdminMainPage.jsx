@@ -50,8 +50,8 @@ const AdminMainPage = () => {
         const response = await fetch(`http://localhost:5000/admin/${adminId}`);
         if (response.ok) {
           const data = await response.json();
-          setFollowingCount(data.following);
-          setFollowersCount(data.followers);
+          setFollowingCount(data.followin);
+          setFollowersCount(data.followersCount);
           setAdminName(data.username);
         } else {
           console.error('Error fetching admin data');

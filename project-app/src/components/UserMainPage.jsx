@@ -47,8 +47,8 @@ const UserMainPage = () => {
         const response = await fetch(`http://localhost:5000/user/${userId}`);
         if (response.ok) {
           const data = await response.json();
-          setFollowersCount(data.followers);
-          setFollowingCount(data.following);
+          setFollowersCount(data.followersCount);
+          setFollowingCount(data.followingCount);
           setUsername(data.username);
         } else {
           const errorData = await response.json();
