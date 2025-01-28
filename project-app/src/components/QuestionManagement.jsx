@@ -56,10 +56,12 @@ const QuestionManagement = () => {
       const response = await fetch(`http://localhost:5000/admin/${adminId}/questions`);
       if (response.ok) {
         const data = await response.json();
-        setQuestions(data.questions);
+        console.log('Fetched Questions:', data); // Debugging
+        setQuestions(data); // data is an array of QuestionResponseDTO
         showModal(myQuestionsModalRef);
       } else {
-        alert('Failed to fetch questions.');
+        const errorData = await response.json();
+        alert(errorData.error || 'Failed to fetch questions.');
       }
     } catch (error) {
       console.error('Error fetching questions:', error);
@@ -70,25 +72,35 @@ const QuestionManagement = () => {
     setNewQuestion((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
+  // Make sure we're setting uppercase keys
   const handleOptionsChange = (e, option) => {
-    setNewQuestion((prev) => ({
+    setNewQuestion(prev => ({
       ...prev,
-      options: { ...prev.options, [option]: e.target.value },
+      options: { ...prev.options, [option.toLowerCase()]: e.target.value },
     }));
   };
+  
+
 
   /* Add New Question */
   const handleAddNewQuestion = async () => {
     const adminId = localStorage.getItem('userId'); // Current admin ID
     const { test, options, correctAnswer, categoryId, difficulty } = newQuestion;
 
+    // Basic validation
     if (!test || !correctAnswer || !categoryId || !difficulty) {
-      alert('Please fill all fields!');
+      alert('Please fill all required fields!');
+      return;
+    }
+
+    // Ensure all options are filled
+    if (!options.a || !options.b || !options.c || !options.d) {
+      alert('Please fill all options (A, B, C, D)!');
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:5000/questions', {
+      const response = await fetch('http://localhost:5000/admin/questions', { // Corrected URL
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ adminId, test, options, correctAnswer, categoryId, difficulty }),
@@ -96,6 +108,8 @@ const QuestionManagement = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Add Question Response:', data); // Debugging
+
         alert('New question added successfully!');
         setQuestions((prev) => [...prev, data.question]); // Update local questions
         setNewQuestion({
@@ -107,7 +121,8 @@ const QuestionManagement = () => {
         });
         closeModal(addQuestionModalRef);
       } else {
-        alert('Failed to add the question.');
+        const errorData = await response.json();
+        alert(errorData.error || 'Failed to add the question.');
       }
     } catch (error) {
       console.error('Error adding question:', error);
@@ -160,20 +175,24 @@ const QuestionManagement = () => {
             <h2>My Questions</h2>
             <div className="question-list">
               {questions.length > 0 ? (
-                questions.map((q, index) => (
-                  <div key={index} className="question-item">
-                    <h3>{q.test}</h3>
-                    <ul>
-                      <li>A: {q.options.A}</li>
-                      <li>B: {q.options.B}</li>
-                      <li>C: {q.options.C}</li>
-                      <li>D: {q.options.D}</li>
-                    </ul>
-                    <p><strong>Correct Answer:</strong> {q.correctAnswer}</p>
-                    <p><strong>Category:</strong> {q.categoryId}</p>
-                    <p><strong>Difficulty:</strong> {q.difficulty}</p>
-                  </div>
-                ))
+                questions.map((q) => {
+                  console.log('Rendering Question:', q); // Debugging
+                  return (
+                    <div key={q.id} className="question-item">
+                      <h3>{q.test}</h3>
+                      <ul>
+                      <li>A: {q.options && q.options.a ? q.options.a : 'N/A'}</li>
+<li>B: {q.options && q.options.b ? q.options.b : 'N/A'}</li>
+<li>C: {q.options && q.options.c ? q.options.c : 'N/A'}</li>
+<li>D: {q.options && q.options.d ? q.options.d : 'N/A'}</li>
+
+                      </ul>
+                      <p><strong>Correct Answer:</strong> {q.correctAnswer}</p>
+                      <p><strong>Category ID:</strong> {q.categoryId}</p>
+                      <p><strong>Difficulty:</strong> {q.difficulty}</p>
+                    </div>
+                  )
+                })
               ) : (
                 <div>No questions found.</div>
               )}
@@ -186,19 +205,50 @@ const QuestionManagement = () => {
           <div className="modal-content">
             <span className="close" onClick={() => closeModal(addQuestionModalRef)}>&times;</span>
             <h2>Add New Question</h2>
-            <input type="text" placeholder="Question Text" value={newQuestion.test} onChange={(e) => handleInputChange(e, 'test')} />
-            <input type="text" placeholder="Option A" value={newQuestion.options.A} onChange={(e) => handleOptionsChange(e, 'A')} />
-            <input type="text" placeholder="Option B" value={newQuestion.options.B} onChange={(e) => handleOptionsChange(e, 'B')} />
-            <input type="text" placeholder="Option C" value={newQuestion.options.C} onChange={(e) => handleOptionsChange(e, 'C')} />
-            <input type="text" placeholder="Option D" value={newQuestion.options.D} onChange={(e) => handleOptionsChange(e, 'D')} />
-            <select value={newQuestion.correctAnswer} onChange={(e) => handleInputChange(e, 'correctAnswer')}>
+            <input
+              type="text"
+              placeholder="Question Text"
+              value={newQuestion.test}
+              onChange={(e) => handleInputChange(e, 'test')}
+            />
+            <input
+              type="text"
+              placeholder="Option A"
+              value={newQuestion.options.a}
+              onChange={(e) => handleOptionsChange(e, 'a')}
+            />
+            <input
+              type="text"
+              placeholder="Option B"
+              value={newQuestion.options.b}
+              onChange={(e) => handleOptionsChange(e, 'b')}
+            />
+            <input
+              type="text"
+              placeholder="Option C"
+              value={newQuestion.options.c}
+              onChange={(e) => handleOptionsChange(e, 'c')}
+            />
+            <input
+              type="text"
+              placeholder="Option D"
+              value={newQuestion.options.d}
+              onChange={(e) => handleOptionsChange(e, 'd')}
+            />
+            <select
+              value={newQuestion.correctAnswer}
+              onChange={(e) => handleInputChange(e, 'correctAnswer')}
+            >
               <option value="">Select Correct Answer</option>
               <option value="A">Option A</option>
               <option value="B">Option B</option>
               <option value="C">Option C</option>
               <option value="D">Option D</option>
             </select>
-            <select value={newQuestion.categoryId} onChange={(e) => handleInputChange(e, 'categoryId')}>
+            <select
+              value={newQuestion.categoryId}
+              onChange={(e) => handleInputChange(e, 'categoryId')}
+            >
               <option value="">Select Category</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
